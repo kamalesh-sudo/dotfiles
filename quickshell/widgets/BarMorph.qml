@@ -26,6 +26,15 @@ import "../core" as Core
 Item {
     id: root
 
+    // Desktop entries are stable for the lifetime of the shell. Keep the
+    // sorted base list on the persistent BarMorph instead of rebuilding it
+    // every time the launcher Loader is created.
+    readonly property var launcherApplications: {
+        const all = [...DesktopEntries.applications.values].filter(d => d.name);
+        all.sort((a, b) => a.name.localeCompare(b.name));
+        return all;
+    }
+
     function notificationSize() {
         const count = Math.min(3, Math.max(1, Core.AppState.notifications.length));
         return { w: 480, h: 72 + count * 58 };
@@ -171,11 +180,9 @@ Item {
                     property int selIndex: 0
 
                     readonly property var apps: {
-                        const all = [...DesktopEntries.applications.values].filter(d => d.name);
-                        all.sort((a, b) => a.name.localeCompare(b.name));
                         const q = query.trim().toLowerCase();
-                        if (q === "") return all;
-                        return all.filter(d => (d.name || "").toLowerCase().includes(q)
+                        if (q === "") return root.launcherApplications;
+                        return root.launcherApplications.filter(d => (d.name || "").toLowerCase().includes(q)
                                             || (d.comment || "").toLowerCase().includes(q));
                     }
                     onQueryChanged: selIndex = 0
@@ -261,6 +268,12 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         source: modelData.icon ? Quickshell.iconPath(modelData.icon, true) : ""
                                         asynchronous: true
+                                        sourceSize.width: 20
+                                        sourceSize.height: 20
+                                        // Launcher delegates are destroyed when the
+                                        // Loader closes; do not retain every decoded
+                                        // application icon in the global image cache.
+                                        cache: false
                                     }
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter

@@ -1,4 +1,3 @@
-
 import QtQuick
 
 QtObject {
@@ -7,83 +6,37 @@ QtObject {
     // POSITION
     // ============================================================
 
-    // "top"
-    // "bottom"
-    //
-    // TOP    = waveform grows DOWN
-    // BOTTOM = waveform grows UP
-    
     readonly property string position: "bottom"
-
-    // "start"
-    // "center"
-    // "end"
-    
     readonly property string alignment: "center"
+    readonly property int margin: 0
 
-    // Distance from the screen edge.
-    
-    readonly property int margin: 0 
 
     // ============================================================
     // SIZE
     // ============================================================
 
-    // Width of the visualizer.
-    
-    readonly property int visualizerWidth:  1200
+    readonly property int visualizerWidth: 700
+    readonly property int visualizerHeight: 220
 
-    // Maximum visualizer area.
-    readonly property int visualizerHeight: 500
-
-    // Maximum audio peak height.
-    //
-    // Lower = shorter peaks.
-    // Higher = taller peaks.
-    
-    readonly property real maximumHeight: 60
-
-    // Minimum height when audio is quiet.
-    
-    readonly property real minimumHeight: 0
+    readonly property real maximumHeight: 85
+    readonly property real minimumHeight: 1
 
 
     // ============================================================
-    // COLOR
+    // DYNAMIC PALETTE
     // ============================================================
 
-	// ============================================================
-	// DYNAMIC PALETTE
-	// ============================================================
+    readonly property bool usePalette: true
 
-	// Enable dynamic palette colors.
-	readonly property bool usePalette: true
+    readonly property string paletteFile:
+        "~/.cache/ryoku/colors.json"
 
-	// Palette JSON file.
-	//
-	// This can point to Matugen, Ryoku, Pywal,
-	// or any other generated palette.
-	
-	readonly property string paletteFile:
-	    "~/.cache/ryoku/colors.json"
+    readonly property var paletteKeys: [
+        "primary",
+        "secondary",
+        "tertiary"
+    ]
 
-	// Keys to prefer when extracting colors.
-	//
-	// These are useful for Matugen-style palettes:
-	//
-	// colors.default.primary
-	// colors.default.secondary
-	// colors.default.tertiary
-	//
-	// If another palette has different names,
-	// simply change this list.
-	
-	readonly property var paletteKeys: [
-	    "primary",
-	    "secondary",
-	    "tertiary"
-	]
-    
     readonly property color visualizerColor: "#ffffff"
 
 
@@ -91,166 +44,104 @@ QtObject {
     // SPECTRUM
     // ============================================================
 
-    // Number of visual ridges.
-    //
-    // 32 = chunky
-    // 64 = detailed
-    // 96 = very detailed
-    // 128 = extremely detailed
-    
-    readonly property int barCount: 55
+    // More bars = finer detail
+    readonly property int barCount: 96
 
 
     // ============================================================
     // OVERALL AUDIO SENSITIVITY
     // ============================================================
 
-    // Overall multiplier.
-    //
-    // 0.5 = subtle
-    // 1.0 = normal
-    // 1.5 = strong
-    // 2.0 = very reactive
-    
-    readonly property real sensitivity: 1.2
+    // Responsive without constantly hitting maximum height
+    readonly property real sensitivity: 1.35
 
 
     // ============================================================
     // AUDIO RESPONSE
     // ============================================================
 
-    // How quickly the waveform reacts when sound increases.
-    //
-    // Lower = faster.
-    // Higher = slower.
-    //
-    // For trap / fast hats:
-    // 0.015 - 0.035
-    
-    readonly property real attack: 0.035
+    // Fast attack
+    readonly property real attack: 0.018
 
+    // Short, controlled falloff
+    readonly property real decay: 0.075
 
-    // How quickly peaks fall.
-    //
-    // Lower = sharper / snappier.
-    // Higher = longer trails.
-    
-    readonly property real decay: 0.01 
-
-
-    // Existing smoothing used by the animation.
-    //
-    // Lower = more raw/reactive.
-    // Higher = smoother.
-    
-    readonly property real smoothing: 0.001
+    // Small amount of smoothing
+    readonly property real smoothing: 0.025
 
 
     // ============================================================
     // FREQUENCY BALANCE
     // ============================================================
 
-    // Bass / kick / sub-bass.
-    
-    readonly property real bassBoost: 1.70
+    // Strong kick / bass
+    readonly property real bassBoost: 0.95
 
-    // Mid frequencies.
-    
-    readonly property real midBoost: 2.00
+    // Proper mids
+    readonly property real midBoost: 0.55
 
-    // Treble / hi-hats / high frequency percussion.
-    
-    readonly property real highBoost: 1.70
+    // Clearly visible highs
+    readonly property real highBoost: 0.32
 
 
     // ============================================================
     // RIDGES / WAVE SHAPE
     // ============================================================
 
-    // Higher = sharper peaks and more visible ridges.
-    //
-    // 1.0 = soft
-    // 1.5 = balanced
-    // 2.0 = sharp
-    // 2.5 = very sharp
-    
-    readonly property real ridgeSharpness: 2.5
+    // Sharp but not spiky
+    readonly property real ridgeSharpness: 1.65
 
-
-    // Blends neighboring bars.
-    //
-    // 0.00 = maximum individual ridge detail
-    // 0.04 = balanced
-    // 0.10 = smooth
-    // 0.20 = very smooth
-    
-    readonly property real waveSmooth: 0.04
+    // Slight blending between neighboring bars
+    readonly property real waveSmooth: 0.035
 
 
     // ============================================================
     // TRANSIENT / BEAT REACTION
     // ============================================================
 
-    // How strongly sudden audio changes affect the waveform.
-    //
-    // Higher = stronger reaction to kicks, snares and hats.
-    
-    readonly property real beatSensitivity: 1.00
+    // Kick/snare/hats react strongly
+    readonly property real beatSensitivity: 1.20
 
-    // How quickly the transient boost disappears.
-    //
-    // Lower = extremely snappy.
-    // Higher = longer beat pulse.
-    
-    readonly property real beatDecay: 0.11
+    // Short beat response
+    readonly property real beatDecay: 0.18
 
 
     // ============================================================
     // SPECTRUM MAPPING
     // ============================================================
 
-    // Controls how quickly frequencies move from center -> edge.
-    //
-    // Lower = more bass area.
-    // Higher = more even distribution.
-    
-    readonly property real frequencyCurve: 0.5
+    // More natural frequency distribution
+    readonly property real frequencyCurve: 0.72
 
+    // Bass concentrated toward center
+    readonly property real centerBassWeight: 1.35
 
-    // How strongly bass affects the center.
-    
-    readonly property real centerBassWeight: 0.70
+    // Extra center energy, but controlled
+    readonly property real centerBassEnergy: 0.65
 
-    // Extra bass energy added directly to the center.
-    
-    readonly property real centerBassEnergy: 0.7
-
-
-    // How strongly treble is emphasized at the edges.
-    
-    readonly property real edgeHighWeight: 0.50
+    // Keep treble visible around edges
+    readonly property real edgeHighWeight: 0.85
 
 
     // ============================================================
     // TRANSIENT FREQUENCY WEIGHTS
     // ============================================================
 
-    // Kick / bass transient contribution.
-    readonly property real bassTransientWeight: 1.50
-
-    // Snare / clap / mids contribution.
-    readonly property real midTransientWeight: 1.20
-
-    // Hats / treble contribution.
-    readonly property real highTransientWeight: 0.90
+    readonly property real bassTransientWeight: 1.30
+    readonly property real midTransientWeight: 1.10
+    readonly property real highTransientWeight: 1.00
 
 
-    // Minimum transient required to trigger the pulse.
-    readonly property real transientThreshold: 0.018
+    // ============================================================
+    // TRANSIENT THRESHOLD
+    // ============================================================
 
-    // Strength of transient amplification.
-    readonly property real transientMultiplier: 7.50
+    // Ignore tiny background fluctuations
+    readonly property real transientThreshold: 0.025
 
-    // How much beatPulse increases the actual waveform.
-    readonly property real beatPulseStrength: 0.65
+    // Moderate transient amplification
+    readonly property real transientMultiplier: 3.20
+
+    // Beat visibly pushes the waveform
+    readonly property real beatPulseStrength: 1.15
 }

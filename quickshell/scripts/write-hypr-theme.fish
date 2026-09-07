@@ -48,7 +48,7 @@ hl.config({
 })
 
 pcall(function()
-  hl.config({ decoration = { blur = { enabled = true, size = 8, passes = 4, vibrancy = 0.7 } } })
+  hl.config({ decoration = { blur = { enabled = true, size = 8, passes = 4, vibrancy = 0.3 } } })
   for _, ns in ipairs({ \"quickshell\", \"quickshell-notifications\",
                         \"quickshell-holorings\", \"quickshell-sysinfo\",
                         \"quickshell-bigclock\" }) do

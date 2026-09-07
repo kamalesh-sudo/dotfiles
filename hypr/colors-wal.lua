@@ -7,10 +7,10 @@ hl.config({
         border_size = 1,
         col = {
             active_border = {
-                colors = { "rgba(B0AFB0ff)", "rgba(D1D1D1ff)" },
+                colors = { "rgba(3D634Fff)", "rgba(4C7B63ff)" },
                 angle = 45,
             },
-            inactive_border = "rgba(000000aa)",
+            inactive_border = "rgba(090c0aaa)",
         },
     },
     decoration = { rounding = 12 },
@@ -18,7 +18,7 @@ hl.config({
 })
 
 pcall(function()
-  hl.config({ decoration = { blur = { enabled = true, size = 8, passes = 4, vibrancy = 0.7 } } })
+  hl.config({ decoration = { blur = { enabled = true, size = 8, passes = 4, vibrancy = 0.3 } } })
   for _, ns in ipairs({ "quickshell", "quickshell-notifications",
                         "quickshell-holorings", "quickshell-sysinfo",
                         "quickshell-bigclock" }) do

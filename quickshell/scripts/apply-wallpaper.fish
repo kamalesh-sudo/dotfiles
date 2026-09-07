@@ -36,8 +36,13 @@ end
 
 set -l mime (file --brief --mime-type -- "$input")
 set -l palette_image "$input"
+set -l video_mode 0
 
 if string match -q 'video/*' "$mime"
+    if not type -q mpvpaper
+        echo "mpvpaper is required for video wallpapers; refusing to start a broken video path" >&2
+        exit 1
+    end
     if not type -q ffmpeg
         echo "ffmpeg is required for video wallpapers" >&2
         exit 1
@@ -47,19 +52,22 @@ if string match -q 'video/*' "$mime"
     # pywal seems to cache the color scheme by the INPUT PATH rather than
     # content, so reusing the same path for different videos would make
     # it reuse the old video's colors even with a new frame written there
-    set palette_image "$cache_dir/wallpaper-frame-(date +%s%N).png"
+    set -l frame_stamp (date +%s%N)
+    set palette_image "$cache_dir/wallpaper-frame-$frame_stamp.png"
 
-    ffmpeg -hide_banner -loglevel error -y -ss 00:00:01 -i "$input" -frames:v 1 "$palette_image"; or \
-        ffmpeg -hide_banner -loglevel error -y -i "$input" -frames:v 1 "$palette_image"
+    if not timeout 30s ffmpeg -hide_banner -loglevel error -y \
+        -ss 00:00:01 -i "$input" -frames:v 1 "$palette_image"
+        rm -f "$palette_image"
+        echo "Failed to extract a palette frame from video: $input" >&2
+        exit 1
+    end
     if not test -s "$palette_image"
-        echo "Failed to extract video frame" >&2
+        echo "Video frame extraction produced no image: $input" >&2
         exit 1
     end
 
     find "$cache_dir" -maxdepth 1 -name 'wallpaper-frame-*.png' ! -name (basename "$palette_image") -delete 2>/dev/null; or true
-
-    pkill -x mpvpaper 2>/dev/null; or true
-    setsid mpvpaper -o "no-audio --loop-file=inf" '*' "$input" >/dev/null 2>&1 &
+    set video_mode 1
 else if string match -q 'image/*' "$mime"
     pkill -x mpvpaper 2>/dev/null; or true
     set -l awww_extra_args
@@ -86,7 +94,7 @@ end
 
 if test -n "$palette_image"
     set -l safe_name (string replace -a / _ -- "$palette_image")
-    rm -f "$HOME/.cache/wal/schemes/$safe_name"* 2>/dev/null; or true
+    find "$HOME/.cache/wal/schemes" -maxdepth 1 -type f -name "$safe_name*" -delete 2>/dev/null; or true
 end
 wal -n -q -i "$palette_image"
 
@@ -95,10 +103,24 @@ if not test -s "$QS_WAL_COLORS"
     exit 1
 end
 
-printf '%s\n' "$input" > "$cache_dir/current-wallpaper"
+printf '%s\n%s\n' "$input" "$mime" > "$cache_dir/current-wallpaper"
 printf '%s\n' "$palette_image" > "$cache_dir/current-palette-image"
 
 "$script_dir/apply-wallpaper-colors-only.fish" "$QS_WAL_COLORS" "$palette_image"
+
+if test "$video_mode" = 1
+    pkill -x mpvpaper 2>/dev/null; or true
+    set -l mpvpaper_log "$cache_dir/mpvpaper.log"
+    set -l mpv_options "no-audio loop-file=inf hwdec=auto-safe framedrop=vo video-sync=display-resample interpolation=no cache=no"
+    setsid mpvpaper -o "$mpv_options" '*' "$input" >"$mpvpaper_log" 2>&1 &
+    set -l mpvpaper_pid $last_pid
+    sleep 0.25
+    if not kill -0 "$mpvpaper_pid" 2>/dev/null; and not pgrep -x mpvpaper >/dev/null 2>&1
+        echo "mpvpaper failed to start; see $mpvpaper_log" >&2
+        exit 1
+    end
+end
+
 echo "OK: wallpaper applied, colors propagated (kitty/Hyprland/qutebrowser/zsh)."
 
 set -l STATE_FILE $QS_CURRENT_WALLPAPER

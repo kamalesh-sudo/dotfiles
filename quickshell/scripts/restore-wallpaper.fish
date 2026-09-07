@@ -25,7 +25,11 @@ if not test -n "$IMG"; or not test -f "$IMG"
     exit 0
 end
 
-if test "$TYPE" = "video"
+if not test -n "$TYPE"
+    set TYPE (file --brief --mime-type -- "$IMG")
+end
+
+if string match -q 'video/*' "$TYPE"
     exec "$SCRIPT_DIR/apply-wallpaper.fish" "$IMG"
 else
     awww img "$IMG"

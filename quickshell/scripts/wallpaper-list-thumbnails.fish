@@ -39,16 +39,14 @@ find "$WALL_DIR" -maxdepth 1 -type f \
     set -l thumb "$THUMB_DIR/$hash.png"
 
     if not test -s "$thumb"
-      switch "$f"
-        case '*.[mM][pP]4' '*.[mM][kK][vV]' '*.[wW][eE][bB][mM]' '*.[mM][oO][vV]'
-          if test "$HAVE_FFMPEG" = 1
-            ffmpeg -y -ss 1 -i "$f" -frames:v 1 -vf "scale=244:-1" \
-              "$thumb" -loglevel error 2>/dev/null; or true
-          end
-        case '*'
-          if test -n "$RESIZE_CMD"
-            "$RESIZE_CMD" "$f" -resize "244x132>" "$thumb" 2>/dev/null; or true
-          end
+      set -l lower_path (string lower -- "$f")
+      if string match -q -r '\.(mp4|mkv|webm|mov)$' -- "$lower_path"
+        if test "$HAVE_FFMPEG" = 1
+          ffmpeg -y -ss 1 -i "$f" -frames:v 1 -vf "scale=244:-1" \
+            -loglevel error "$thumb" 2>/dev/null; or true
+        end
+      else if test -n "$RESIZE_CMD"
+        "$RESIZE_CMD" "$f" -resize "244x132>" "$thumb" 2>/dev/null; or true
       end
     end
 

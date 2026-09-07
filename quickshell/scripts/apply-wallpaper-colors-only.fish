@@ -50,7 +50,7 @@ pairs = [("RICE_COL_ACCENT", c["color4"]), ("RICE_COL_MUTED", c["color8"]),
          ("RICE_COL_OK", c["color2"]), ("RICE_COL_ERROR", c["color1"])]
 with open(sys.argv[2], "w") as f:
     for key, color in pairs:
-        f.write('typeset -g %s="%d"\n' % (key, to256(color)))
+        f.write("typeset -g %s=%d\n" % (key, to256(color)))
 ' "$colors_json" "$HOME/.cache/wal/colors-zsh.sh"
 or exit $status
 

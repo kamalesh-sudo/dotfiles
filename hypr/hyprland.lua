@@ -234,7 +234,7 @@ hl.device({
 
 local mainMod = "SUPER"
 --/local mainMOd = ""
-local keybinds = require("keybinds")
+--local keybinds = require("keybinds")
 -- keybinds.setup(mainMod)
 
 -- SLEEP RULE

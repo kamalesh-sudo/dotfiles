@@ -490,7 +490,7 @@ hl.window_rule({
     match = {
         class = "^thunar$",
     },
-    opacity = 0.7
+    opacity = 0.75
 
 })
 
@@ -502,9 +502,30 @@ hl.window_rule({
     },
 
     float = true,
-    opacity = 0.95,
+    opacity = 0.75,
 })
-    -- local overlayLayerRule = hl.layer_rule({
+
+hl.window_rule({
+    name = "kdeconnect-glass",
+
+    match = {
+        class = "^org.kde.kdeconnect.*$",
+    },
+
+    opacity = 0.75
+})
+
+hl.window_rule({
+    name = "global-transparency",
+
+    match = {
+        class = ".*",
+    },
+
+    opacity = 0.85
+})
+
+-- local overlayLayerRule = hl.layer_rule({
     --     name = "no-anim-overlay",
 --     match = { namespace = "^my-overlay$" },
 --     no_anim = true,

@@ -103,6 +103,19 @@ if not test -s "$QS_WAL_COLORS"
     exit 1
 end
 
+# Generate KDE/Qt color scheme from the new Pywal palette
+set -l qt_colors_generator "$HOME/.config/quickshell/scripts/generate-qt-colors.py"
+
+if test -x "$qt_colors_generator"
+    if not python "$qt_colors_generator"
+        echo "Failed to generate Qt color scheme" >&2
+        exit 1
+    end
+else
+    echo "Qt color generator not found: $qt_colors_generator" >&2
+end
+
+
 printf '%s\n%s\n' "$input" "$mime" > "$cache_dir/current-wallpaper"
 printf '%s\n' "$palette_image" > "$cache_dir/current-palette-image"
 

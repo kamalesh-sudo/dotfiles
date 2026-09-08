@@ -264,9 +264,27 @@ Item {
                                     x: 12
                                     spacing: 10
                                     Image {
+                                        id: appIcon
                                         width: 20; height: 20
                                         anchors.verticalCenter: parent.verticalCenter
-                                        source: modelData.icon ? Quickshell.iconPath(modelData.icon, true) : ""
+                                        property string iconName: {
+                                            const raw = String(modelData.icon || "");
+                                            const basename = raw.slice(raw.lastIndexOf("/") + 1);
+                                            return basename.replace(/\.(svg|png|xpm)$/i, "");
+                                        }
+                                        property string candyIconName: {
+                                            const aliases = { burpsuite: "burp" };
+                                            return aliases[iconName] || iconName;
+                                        }
+                                        property string fallbackSource: modelData.icon
+                                            ? Quickshell.iconPath(modelData.icon, true) : ""
+                                        property int candyAttempt: 0
+                                        property bool candyFailed: iconName.length === 0
+                                        readonly property var candySources: [
+                                            "file:///usr/share/icons/candy-icons/apps/scalable/" + candyIconName + ".svg",
+                                            "file:///usr/share/icons/candy-icons/apps/scalable/" + candyIconName + ".png"
+                                        ]
+                                        source: candyFailed ? fallbackSource : candySources[candyAttempt]
                                         asynchronous: true
                                         sourceSize.width: 20
                                         sourceSize.height: 20
@@ -274,6 +292,11 @@ Item {
                                         // Loader closes; do not retain every decoded
                                         // application icon in the global image cache.
                                         cache: false
+                                        onStatusChanged: {
+                                            if (status !== Image.Error) return;
+                                            if (candyAttempt + 1 < candySources.length) candyAttempt += 1;
+                                            else candyFailed = true;
+                                        }
                                     }
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter

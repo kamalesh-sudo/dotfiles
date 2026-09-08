@@ -242,7 +242,7 @@ hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind("ALT + F4", hl.dsp.exec_cmd("systemctl suspend"))
 
 -- Applications
-
+hl.bind(mainMod .. " + PERIOD",hl.dsp.exec_cmd("plasma-emojier"))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 --hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
@@ -493,8 +493,17 @@ hl.window_rule({
     opacity = 0.7
 
 })
-    -- Layer rules
 
+hl.window_rule({
+    name = "emoji-selector-style",
+
+    match = {
+        class = "^org%.kde%.plasma%.emojier$",
+    },
+
+    float = true,
+    opacity = 0.95,
+})
     -- local overlayLayerRule = hl.layer_rule({
     --     name = "no-anim-overlay",
 --     match = { namespace = "^my-overlay$" },

@@ -66,7 +66,7 @@ Variants {
 
         anchors { top: true }
         implicitWidth: Math.min(880, screenWidth * 0.345)
-        implicitHeight: Local.Colors.barHeight + 16
+        implicitHeight: Local.Colors.barHeight + 10
         color: "transparent"
         visible: Local.AppState.showBar
 
@@ -77,8 +77,8 @@ Variants {
         Rectangle {
             id: barBg
             anchors.fill: parent
-            anchors.topMargin: 8
-            anchors.bottomMargin: 8
+            anchors.topMargin: 4
+            anchors.bottomMargin: 4
 
             opacity: Local.AppState.barTemporarilyHidden ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutQuad } }

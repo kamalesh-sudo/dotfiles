@@ -19,7 +19,6 @@ Item {
         target: "notifications"
         function notify(summary: string, body: string, urgency: string): void {
             Core.AppState.addNotification(summary, body, urgency)
-            Core.AppState.requestMorph("notifications")
         }
         function clear(): void { Core.AppState.clearNotifications(); }
         function toggle(): void { Core.AppState.requestMorph("notifications"); }

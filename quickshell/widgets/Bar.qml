@@ -261,7 +261,7 @@ Variants {
                             Rectangle {
                                 id: clusterBtn
                                 width: 30
-                                height: 26
+                                height: Local.Colors.barHeight
                                 radius: height / 2
                                 color: (Local.AppState.barMorph === modelData.morph
                                         && Local.AppState.morphScreenName === (win.modelData ? win.modelData.name : ""))

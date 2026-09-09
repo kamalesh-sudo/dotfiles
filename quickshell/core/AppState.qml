@@ -14,6 +14,12 @@ QtObject {
     property var todos: []
     property int notificationSerial: 0
     property bool notificationDrawerVisible: false
+    property var popupNotification: null
+    property Timer notificationPopupTimer: Timer {
+        interval: 6000
+        repeat: false
+        onTriggered: root.popupNotification = null
+    }
 
     property string barMorph: ""
     property real morphOriginX: 0
@@ -100,10 +106,70 @@ QtObject {
 
     function openPanel(name) { activePanel = name }
     function closePanel() { activePanel = "" }
-    function addNotification(summary, body, urgency) {
-        const item = { id: ++notificationSerial, summary: String(summary || "Notification"), body: String(body || ""), urgency: String(urgency || "normal") }
-        notifications = [item].concat(notifications).slice(0, 50)
+    function showNotificationPopup(item) {
+        popupNotification = item
+        notificationPopupTimer.restart()
     }
-    function dismissNotification(id) { notifications = notifications.filter(item => item.id !== id) }
-    function clearNotifications() { notifications = []; notificationDrawerVisible = false }
+
+    function addNotification(summary, body, urgency) {
+        const item = { id: ++notificationSerial, nativeId: 0, native: null,
+                       appName: "Quickshell", appIcon: "", summary: String(summary || "Notification"),
+                       body: String(body || ""), urgency: String(urgency || "normal"), actions: [] }
+        notifications = [item].concat(notifications).slice(0, 50)
+        showNotificationPopup(item)
+    }
+
+    function addSystemNotification(notification) {
+        const item = { id: ++notificationSerial, nativeId: notification.id, native: notification,
+                       appName: String(notification.appName || "Notification"),
+                       appIcon: String(notification.appIcon || notification.image || ""),
+                       summary: String(notification.summary || "Notification"),
+                       body: String(notification.body || ""),
+                       urgency: notification.urgency,
+                       actions: notification.actions || [] }
+        notifications = [item].concat(notifications.filter(existing => existing.nativeId !== item.nativeId)).slice(0, 50)
+        showNotificationPopup(item)
+    }
+
+    function removeNotification(id) {
+        notifications = notifications.filter(item => item.id !== id)
+        if (popupNotification && popupNotification.id === id)
+            popupNotification = null
+    }
+
+    function dismissNotification(id) {
+        const item = notifications.find(candidate => candidate.id === id)
+        if (item && item.native) item.native.dismiss()
+        removeNotification(id)
+    }
+
+    function dismissNativeNotification(nativeId) {
+        const item = notifications.find(candidate => candidate.nativeId === nativeId)
+        if (item) removeNotification(item.id)
+    }
+
+    function syncNativeNotifications(active) {
+        const ids = active.map(notification => notification.id)
+        const retained = notifications.filter(item => !item.native || ids.includes(item.nativeId))
+        if (retained.length !== notifications.length) notifications = retained
+        if (popupNotification && popupNotification.native
+                && !ids.includes(popupNotification.nativeId)) popupNotification = null
+    }
+
+    function invokeNotificationAction(id, action) {
+        const item = notifications.find(candidate => candidate.id === id)
+        if (!item || !item.native) return
+        const selected = item.actions.find(candidate => candidate.identifier === action)
+        if (selected) selected.invoke()
+    }
+
+    function clearNotifications() {
+        notifications.slice().forEach(item => {
+            if (!item.native) return
+            try { item.native.dismiss() } catch (error) { }
+        })
+        notifications = []
+        popupNotification = null
+        notificationDrawerVisible = false
+    }
 }

@@ -433,23 +433,47 @@ Item {
             Component {
                 id: powerContent
                 RowLayout {
+                    id: powerRoot
                     anchors.fill: parent
                     spacing: 8
+                    property var powerOptions: [
+                        { glyph: "\uf023", label: "Lock",     action: "lock" },
+                        { glyph: "\uf186", label: "Sleep",    action: "sleep" },
+                        { glyph: "\uf2f1", label: "Reboot",   action: "reboot" },
+                        { glyph: "\uf011", label: "Shutdown", action: "shutdown" }
+                    ]
+                    property int selIndex: 0
+                    focus: true
+                    Component.onCompleted: forceActiveFocus()
+
+                    Keys.onPressed: (event) => {
+                        if (event.key === Qt.Key_Up) {
+                            selIndex = Math.max(0, selIndex - 1)
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Down) {
+                            selIndex = Math.min(powerOptions.length - 1, selIndex + 1)
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            Core.AppState.runPowerAction(powerOptions[selIndex].action)
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Escape) {
+                            Core.AppState.closeMorph()
+                            event.accepted = true
+                        }
+                    }
 
                     Repeater {
-                        model: [
-                            { glyph: "\uf023", label: "Lock",     action: "lock" },
-                            { glyph: "\uf186", label: "Sleep",    action: "sleep" },
-                            { glyph: "\uf2f1", label: "Reboot",   action: "reboot" },
-                            { glyph: "\uf011", label: "Shutdown", action: "shutdown" }
-                        ]
+                        model: powerRoot.powerOptions
 
                         delegate: Rectangle {
                             id: powerBtn
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             radius: Core.MenuStyle.cardRadius
-                            color: hoverArea.containsMouse ? Core.MenuStyle.hoverSurfaceColor : "transparent"
+                            color: hoverArea.containsMouse || index === powerRoot.selIndex
+                                   ? Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
+                                             Core.Colors.accent.b, 0.25)
+                                   : Core.MenuStyle.subtleSurfaceColor
                             border.width: 0
 
                             Behavior on color { ColorAnimation { duration: 120 } }
@@ -478,12 +502,11 @@ Item {
                                 id: hoverArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                onEntered: powerRoot.selIndex = index
                                 onClicked: Core.AppState.runPowerAction(modelData.action)
                             }
                         }
                     }
-                    focus: true
-                    Keys.onEscapePressed: Core.AppState.closeMorph()
                 }
             }
             Component {
@@ -618,6 +641,12 @@ Item {
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 8
+                    focus: true
+
+                    Keys.onPressed: (event) => {
+                        Core.AppState.closeMorph()
+                        event.accepted = true
+                    }
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -650,12 +679,13 @@ Item {
                         Layout.fillHeight: true
                         clip: true
                         spacing: 4
-                        model: Core.AppState.notifications.slice(0, 3)
+                        model: Core.AppState.notifications
 
                         delegate: Rectangle {
                             required property var modelData
+                            readonly property int notificationId: modelData.id
                             width: ListView.view.width
-                            height: 54
+                            height: 78
                             radius: Core.MenuStyle.cardRadius
                             color: Core.MenuStyle.notificationSurfaceColor
                             border.width: Core.MenuStyle.borderWidth
@@ -664,8 +694,11 @@ Item {
                             Column {
                                 anchors.left: parent.left
                                 anchors.right: dismiss.left
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
                                 anchors.leftMargin: 10
+                                anchors.topMargin: 8
+                                anchors.bottomMargin: 8
                                 spacing: 2
 
                                 Text {
@@ -687,6 +720,38 @@ Item {
                                     elide: Text.ElideRight
                                     width: parent.width
                                 }
+
+                                Row {
+                                    spacing: 6
+
+                                    Repeater {
+                                        model: modelData.actions || []
+
+                                        delegate: Rectangle {
+                                            width: actionLabel.implicitWidth + 16
+                                            height: 20
+                                            radius: 10
+                                            color: Core.MenuStyle.inputSurfaceColor
+                                            border.color: Core.Colors.accent
+                                            border.width: Core.MenuStyle.borderWidth
+
+                                            Text {
+                                                id: actionLabel
+                                                anchors.centerIn: parent
+                                                text: modelData.text
+                                                color: Core.Colors.foreground
+                                                font.family: Core.Colors.fontFamily
+                                                font.pixelSize: 9
+                                                font.weight: Core.Colors.textWeight
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: Core.AppState.invokeNotificationAction(notificationId, modelData.identifier)
+                                            }
+                                        }
+                                    }
+                                }
                             }
 
                             Text {
@@ -700,7 +765,7 @@ Item {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: Core.AppState.dismissNotification(modelData.id)
+                                onClicked: Core.AppState.dismissNotification(modelData.id)
                                 }
                             }
                         }

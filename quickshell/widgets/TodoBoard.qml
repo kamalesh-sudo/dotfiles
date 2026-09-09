@@ -48,7 +48,6 @@ Item {
 
             root.locallyNotified[root.todoKey(item)] = now.getTime()
             Core.AppState.addNotification("Todo reminder", item.text, "normal")
-            Core.AppState.requestMorph("notifications")
             Core.AppState.markTodoNotified(item.id)
         }
     }

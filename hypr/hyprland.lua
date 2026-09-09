@@ -29,10 +29,10 @@ hl.monitor({
 ---------------------
 
 local terminal    = "kitty"
-local fileManager = "thunar"
+local fileManager = "kitty yazi"
 --local menu        = "hyprlauncher"
 local browser     = "qutebrowser"
-local music = "harmonoid"
+local music = "/opt/Spun/scripts/run.sh"
 local notes = "obsidian"
 local code = "vscodium"
 local monitor = "kitty --start-as=fullscreen -e btop"

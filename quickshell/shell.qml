@@ -11,6 +11,8 @@ ShellRoot {
     WallpaperSelector {}
     ClipboardHistory {}
     AppLauncher {}
+    NotificationService {}
+    NotificationPopup {}
     WifiMenu {}
     ArchSymbol{}
     Dock{}

@@ -12,13 +12,29 @@ Variants {
         screen: modelData
 
         readonly property var notification: Core.AppState.popupNotification
+        readonly property var primaryAction: notification && notification.actions
+                                             && notification.actions.length > 0
+                                             ? notification.actions[0] : null
+
+        function openNotification() {
+            const current = win.notification
+            if (!current) return
+
+            if (win.primaryAction)
+                Core.AppState.invokeNotificationAction(current.id, win.primaryAction.identifier)
+
+            const desktopEntry = current.native ? current.native.desktopEntry : ""
+            if (desktopEntry) Quickshell.execDetached(["gtk-launch", desktopEntry])
+            Core.AppState.dismissNotification(current.id)
+        }
 
         anchors.top: true
         anchors.right: true
-        margins.top: 18
-        margins.right: 24
+        // Match the existing desktop-widget gap: bar height (56) + 36px.
+        margins.top: Core.Colors.barHeight + 16 + 36
+        margins.right: 28
         implicitWidth: 360
-        implicitHeight: notification ? 148 : 0
+        implicitHeight: notification ? 156 : 0
         color: "transparent"
         visible: notification !== null && Core.AppState.notifications.length > 0
 
@@ -43,25 +59,13 @@ Variants {
                     spacing: 8
 
                     Text {
-                        width: parent.width - dismiss.implicitWidth - 8
+                        width: parent.width
                         text: win.notification ? win.notification.appName : "Notification"
                         color: Core.Colors.muted
                         font.family: Core.Colors.fontFamily
                         font.pixelSize: 10
                         font.weight: Core.Colors.textWeight
                         elide: Text.ElideRight
-                    }
-
-                    Text {
-                        id: dismiss
-                        text: "×"
-                        color: Core.Colors.accent
-                        font.pixelSize: 18
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: if (win.notification) Core.AppState.dismissNotification(win.notification.id)
-                        }
                     }
                 }
 
@@ -88,33 +92,57 @@ Variants {
                 }
 
                 Row {
+                    width: parent.width
                     spacing: 6
 
-                    Repeater {
-                        model: win.notification ? win.notification.actions : []
+                    Rectangle {
+                        width: (parent.width - 6) / 2
+                        height: 24
+                        radius: Core.MenuStyle.cardRadius
+                        color: closeMouse.containsMouse ? Core.MenuStyle.hoverSurfaceColor
+                                                         : Core.MenuStyle.inputSurfaceColor
+                        border.color: Core.Colors.accent
+                        border.width: Core.MenuStyle.borderWidth
 
-                        delegate: Rectangle {
-                            width: actionLabel.implicitWidth + 16
-                            height: 20
-                            radius: 10
-                            color: Core.MenuStyle.inputSurfaceColor
-                            border.color: Core.Colors.accent
-                            border.width: Core.MenuStyle.borderWidth
+                        Text {
+                            anchors.centerIn: parent
+                            text: "CLOSE"
+                            color: Core.Colors.foreground
+                            font.family: Core.Colors.fontFamily
+                            font.pixelSize: 9
+                            font.weight: Core.Colors.textWeight
+                        }
 
-                            Text {
-                                id: actionLabel
-                                anchors.centerIn: parent
-                                text: modelData.text
-                                color: Core.Colors.foreground
-                                font.family: Core.Colors.fontFamily
-                                font.pixelSize: 9
-                                font.weight: Core.Colors.textWeight
-                            }
+                        MouseArea {
+                            id: closeMouse
+                            anchors.fill: parent
+                            onClicked: if (win.notification) Core.AppState.dismissNotification(win.notification.id)
+                        }
+                    }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: Core.AppState.invokeNotificationAction(win.notification.id, modelData.identifier)
-                            }
+                    Rectangle {
+                        width: (parent.width - 6) / 2
+                        height: 24
+                        radius: Core.MenuStyle.cardRadius
+                        color: openMouse.containsMouse ? Core.MenuStyle.hoverSurfaceColor
+                                                        : Core.MenuStyle.inputSurfaceColor
+                        border.color: Core.Colors.accent
+                        border.width: Core.MenuStyle.borderWidth
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: win.primaryAction ? win.primaryAction.text : "OPEN"
+                            color: Core.Colors.foreground
+                            font.family: Core.Colors.fontFamily
+                            font.pixelSize: 9
+                            font.weight: Core.Colors.textWeight
+                            elide: Text.ElideRight
+                        }
+
+                        MouseArea {
+                            id: openMouse
+                            anchors.fill: parent
+                            onClicked: win.openNotification()
                         }
                     }
                 }

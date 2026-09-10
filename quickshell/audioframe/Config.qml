@@ -6,7 +6,7 @@ QtObject {
     // POSITION
     // ============================================================
 
-    readonly property string position: "bottom"
+    readonly property string position: "top"
     readonly property string alignment: "center"
     readonly property int margin: 0
 
@@ -15,10 +15,10 @@ QtObject {
     // SIZE
     // ============================================================
 
-    readonly property int visualizerWidth: 700
-    readonly property int visualizerHeight: 220
+    readonly property int visualizerWidth: 550
+    readonly property int visualizerHeight: 200
 
-    readonly property real maximumHeight: 85
+    readonly property real maximumHeight: 45
     readonly property real minimumHeight: 1
 
 

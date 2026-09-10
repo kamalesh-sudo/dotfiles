@@ -65,8 +65,8 @@ Variants {
         }
 
         anchors { top: true }
-        implicitWidth: Math.min(880, screenWidth * 0.345)
-        implicitHeight: Local.Colors.barHeight + 10
+        implicitWidth: Math.min(880, screenWidth * 0.300)
+        implicitHeight: Local.Colors.barHeight + 3
         color: "transparent"
         visible: Local.AppState.showBar
 
@@ -77,8 +77,8 @@ Variants {
         Rectangle {
             id: barBg
             anchors.fill: parent
-            anchors.topMargin: 4
-            anchors.bottomMargin: 4
+            anchors.topMargin: 2
+            anchors.bottomMargin: 1
 
             opacity: Local.AppState.barTemporarilyHidden ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutQuad } }
@@ -171,7 +171,7 @@ Variants {
                         Rectangle {
                             x: workspaces.blobX
                             width: workspaces.blobWidth
-                            height: workspaces.cellHeight
+                            height: Local.Colors.barHeight - 17
                             radius: height / 2
                             color: Qt.rgba(1, 1, 1, 0.92)
                         }
@@ -261,7 +261,7 @@ Variants {
                             Rectangle {
                                 id: clusterBtn
                                 width: 30
-                                height: Local.Colors.barHeight
+                                height: Local.Colors.barHeight - 10
                                 radius: height / 2
                                 color: (Local.AppState.barMorph === modelData.morph
                                         && Local.AppState.morphScreenName === (win.modelData ? win.modelData.name : ""))

@@ -523,6 +523,10 @@ hl.exec_cmd("~/.config/quickshell/launch.fish")
 end)
 
 
+hl.on("hyprland.start", function()
+hl.exec_cmd("~/.config/hypr/hypridle.conf")
+end)
+
 --------------------------------
 ---- VANTAGE BLUR -------------
 --------------------------------

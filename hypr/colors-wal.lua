@@ -7,10 +7,10 @@ hl.config({
         border_size = 1,
         col = {
             active_border = {
-                colors = { "rgba(873D49ff)", "rgba(ACACACff)" },
+                colors = { "rgba(B2AFB0ff)", "rgba(D1CECFff)" },
                 angle = 45,
             },
-            inactive_border = "rgba(0A0A0Aaa)",
+            inactive_border = "rgba(000000aa)",
         },
     },
     decoration = { rounding = 12 },

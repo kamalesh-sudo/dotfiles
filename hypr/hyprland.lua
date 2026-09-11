@@ -55,15 +55,15 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Please note permission changes here require a Hyprland restart and are not applied on-the-fly
 -- for security reasons
 
--- hl.config({
---   ecosystem = {
---     enforce_permissions = true,
---   },
--- })
+hl.config({
+   ecosystem = {
+     enforce_permissions = true,
+   },
+ })
 
--- hl.permission("/usr/(bin|local/bin)/grim", "screencopy", "allow")
--- hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
--- hl.permission("/usr/(bin|local/bin)/hyprpm", "plugin", "allow")
+ hl.permission("/usr/(bin|local/bin)/grim", "screencopy", "allow")
+ hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
+ hl.permission("/usr/(bin|local/bin)/hyprpm", "plugin", "allow")
 
 
 -----------------------
@@ -77,7 +77,7 @@ hl.config({
         gaps_in  = 2,
         gaps_out = 2,
 
-        border_size = 2,
+        border_size = 4,
 
         col = {
             active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
@@ -112,7 +112,7 @@ hl.config({
     },
 
     animations = {
-        enabled = true,
+        enabled = false,
     },
 })
 
@@ -190,7 +190,7 @@ hl.config({
 hl.config({
     misc = {
         force_default_wallpaper = -1,
-            disable_hyprland_logo   = false,
+            disable_hyprland_logo   = true,
     },
 })
 
@@ -233,14 +233,11 @@ hl.device({
 ---------------------
 
 local mainMod = "SUPER"
---/local mainMOd = ""
---local keybinds = require("keybinds")
--- keybinds.setup(mainMod)
 
 -- SLEEP RULE
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind("ALT + F4", hl.dsp.exec_cmd("systemctl suspend"))
-
+hl.bind("CTRL + ALT + DELETE", hl.dsp.exec_cmd("systemctl poweroff"))
 -- Applications
 hl.bind(mainMod .. " + PERIOD",hl.dsp.exec_cmd("plasma-emojier"))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
@@ -248,14 +245,13 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 --hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd(notes))
-hl.bind(mainMod .. "+ CTRL+ O", hl.dsp.exec_cmd(code))
+hl.bind(mainMod .. "+ ALT+ O", hl.dsp.exec_cmd(code))
 hl.bind(mainMod .." + M",hl.dsp.exec_cmd(music))
 hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd(monitor))
 hl.bind(mainMod .." + ALT + M", hl.dsp.exec_cmd("elisa"))
 hl.bind(mainMod .. " + SPACE ",hl.dsp.exec_cmd("qs ipc call appLauncher toggle"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(" qs ipc call wallpaperSelector toggle "))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs -p /home/kamal/.config/quickshell ipc call clipboardHistory toggle"))
-hl.bind("CTRL + ALT + DELETE", hl.dsp.exec_cmd("qs -p /home/kamal/.config/quickshell ipc call powerMenu toggle"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -p /home/kamal/.config/quickshell ipc call notifications toggle"))
 
 --screen shot and record
@@ -276,21 +272,6 @@ hl.bind(mainMod .."+SHIFT + R",
 hl.bind("CTRL + SHIFT + X",
     hl.dsp.exec_cmd([[pkill -SIGINT -f 'gpu-screen-recorder']]))
 
--- Toggle partial-screen recording
-hl.bind(mainMod .."+ R",
-    hl.dsp.exec_cmd([[sh -c '
-        if pgrep -f "gpu-screen-recorder" >/dev/null; then
-            pkill -SIGINT -f "gpu-screen-recorder"
-        else
-            mkdir -p "$HOME/Videos/Recordings"
-            region=$(slurp | sed -E "s/^([0-9]+),([0-9]+) ([0-9]+x[0-9]+)$/\3+\1+\2/")
-            [ -n "$region" ] || exit 0
-            gpu-screen-recorder \
-                -w "$region" \
-                -f 60 \
-                -o "$HOME/Videos/Recordings/$(date +%Y-%m-%d_%H-%M-%S).mp4"
-        fi
-    ']]))
 
 hl.bind(mainMod .. "+ CTRL+ S",
     hl.dsp.exec_cmd([[mkdir -p "$HOME/Pictures/Screenshots/tmp" && grim -g "$(slurp)" "$HOME/Pictures/Screenshots/tmp/$(date +'%Y-%m-%d_%H-%M-%S').png"]]))

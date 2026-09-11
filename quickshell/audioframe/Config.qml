@@ -19,7 +19,7 @@ QtObject {
     readonly property int visualizerHeight: 200
 
     readonly property real maximumHeight: 45
-    readonly property real minimumHeight: 1
+    readonly property real minimumHeight: 0
 
 
     // ============================================================

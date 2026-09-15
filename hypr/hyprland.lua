@@ -45,6 +45,18 @@ local monitor = "kitty --start-as=fullscreen -e btop"
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+--
+--hl.on("hyprland.start", function()
+--    hl.exec_cmd("hypridle -c ~/.config/hypr/hypridle.conf")
+--end)
+hl.on("hyprland.start", function()
+    hl.timer(function()
+        hl.exec_cmd("hypridle -c /home/kamal/.config/hypr/hypridle.conf >> /tmp/hypridle.log 2>&1")
+    end, {
+        timeout = 1000,
+        type = "oneshot",
+    })
+end)
 
 
 -----------------------
@@ -522,10 +534,6 @@ hl.on("hyprland.start", function()
 hl.exec_cmd("~/.config/quickshell/launch.fish")
 end)
 
-
-hl.on("hyprland.start", function()
-hl.exec_cmd("~/.config/hypr/hypridle.conf")
-end)
 
 --------------------------------
 ---- VANTAGE BLUR -------------

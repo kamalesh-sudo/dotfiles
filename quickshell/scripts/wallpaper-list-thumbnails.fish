@@ -32,7 +32,7 @@ end
 
 find "$WALL_DIR" -maxdepth 1 -type f \
   \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \
-     -o -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' \) \
+     -o -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' -o -iname '*.gif' \) \
   | sort | while read -l f
 
     set -l hash (printf '%s' "$f" | md5sum | cut -d' ' -f1)
@@ -40,7 +40,7 @@ find "$WALL_DIR" -maxdepth 1 -type f \
 
     if not test -s "$thumb"
       set -l lower_path (string lower -- "$f")
-      if string match -q -r '\.(mp4|mkv|webm|mov)$' -- "$lower_path"
+      if string match -q -r '\.(mp4|mkv|webm|mov|gif)$' -- "$lower_path"
         if test "$HAVE_FFMPEG" = 1
           ffmpeg -y -ss 1 -i "$f" -frames:v 1 -vf "scale=244:-1" \
             -loglevel error "$thumb" 2>/dev/null; or true

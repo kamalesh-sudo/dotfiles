@@ -1,4 +1,4 @@
 function lsf
-    ls ~/.config/fish/functions/
+    lsd ~/.config/fish/functions/
     
 end

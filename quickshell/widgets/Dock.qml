@@ -29,7 +29,7 @@ Variants {
         readonly property var actions: [
             { label: "terminal",     sub: "kitty",              icon: "\uf120", cmd: ["kitty"] },
             { label: "qutebrowser",  sub: "web browser",       icon: "\ue76b", cmd: ["qutebrowser"] },
-            { label: "neovim",       sub: "kitty nvim",         icon: "\ue62b", cmd: ["kitty", "nvim"] },
+            { label: "youtube",       sub: "media",         icon: "\uf16a", cmd: ["freetube"] },
             { label: "Burp",       sub: "Proxy",         icon: "\udb84\uddea", cmd: ["burpsuite"] },
         ]
 

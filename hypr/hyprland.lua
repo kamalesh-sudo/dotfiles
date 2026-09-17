@@ -45,10 +45,13 @@ local monitor = "kitty --start-as=fullscreen -e btop"
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
---
---hl.on("hyprland.start", function()
---    hl.exec_cmd("hypridle -c ~/.config/hypr/hypridle.conf")
---end)
+
+-------------------------------
+--------- HYPR IDLE -----------
+-------------------------------
+
+
+
 hl.on("hyprland.start", function()
     hl.timer(function()
         hl.exec_cmd("hypridle -c /home/kamal/.config/hypr/hypridle.conf >> /tmp/hypridle.log 2>&1")
@@ -89,7 +92,7 @@ hl.config({
         gaps_in  = 2,
         gaps_out = 2,
 
-        border_size = 4,
+        border_size = 5,
 
         col = {
             active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },

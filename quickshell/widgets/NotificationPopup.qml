@@ -31,10 +31,10 @@ Variants {
         anchors.top: true
         anchors.right: true
         // Match the existing desktop-widget gap: bar height (56) + 36px.
-        margins.top: Core.Colors.barHeight + 16 + 36
-        margins.right: 28
+        margins.top: Core.Colors.barHeight + -40
+        margins.right: 2
         implicitWidth: 360
-        implicitHeight: notification ? 156 : 0
+        implicitHeight: notification ? 100 : 0
         color: "transparent"
         visible: notification !== null && Core.AppState.notifications.length > 0
 
@@ -51,8 +51,8 @@ Variants {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 14
-                spacing: 5
+                anchors.margins: 5 
+                spacing: 0
 
                 Row {
                     width: parent.width

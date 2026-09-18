@@ -87,7 +87,8 @@ Item {
         radius: root.visualRadius
         clip: true
         color: Core.MenuStyle.morphPanelColor
-        border.color: Core.Colors.accent
+        border.color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
+                              Core.Colors.accent.b, 0.45)
         border.width: Core.MenuStyle.borderWidth
 
         // One static, shared material tint for both collapsed and expanded
@@ -98,10 +99,10 @@ Item {
                 right: parent.right
                 top: parent.top
                 bottom: parent.bottom
-                margins: root.visualRadius
+                margins: 0
             }
             z: 0
-            radius: Math.max(0, root.visualRadius - 2)
+            radius: root.visualRadius
             color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
                            Core.Colors.accent.b, 0.018)
         }
@@ -114,10 +115,10 @@ Item {
                 right: parent.right
                 top: parent.top
                 bottom: parent.bottom
-                margins: root.visualRadius
+                margins: 0
             }
             z: 0
-            radius: Math.max(0, root.visualRadius - 2)
+            radius: root.visualRadius
             gradient: Gradient {
                 GradientStop {
                     position: 0.0
@@ -213,18 +214,16 @@ Item {
             id: specularEdges
             anchors.fill: parent
             z: 5
-            opacity: 0.70
+            opacity: 0.35
 
             Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.leftMargin: root.visualRadius
-                anchors.rightMargin: root.visualRadius
-                height: Math.max(7, parent.height * 0.028)
+                height: Math.max(3, parent.height * 0.012)
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.11) }
-                    GradientStop { position: 0.38; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.035) }
+                    GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.055) }
+                    GradientStop { position: 0.38; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.018) }
                     GradientStop { position: 1.0; color: "transparent" }
                 }
             }
@@ -233,41 +232,11 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                anchors.leftMargin: root.visualRadius
-                anchors.rightMargin: root.visualRadius
-                height: Math.max(5, parent.height * 0.024)
+                height: Math.max(3, parent.height * 0.012)
                 gradient: Gradient {
                     GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 0.62; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.018) }
-                    GradientStop { position: 1.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.055) }
-                }
-            }
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.topMargin: root.visualRadius
-                anchors.bottomMargin: root.visualRadius
-                width: 10
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.06) }
-                    GradientStop { position: 0.45; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.022) }
-                    GradientStop { position: 1.0; color: "transparent" }
-                }
-            }
-
-            Rectangle {
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.topMargin: root.visualRadius
-                anchors.bottomMargin: root.visualRadius
-                width: 10
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 0.55; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.022) }
-                    GradientStop { position: 1.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.06) }
+                    GradientStop { position: 0.62; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.010) }
+                    GradientStop { position: 1.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.025) }
                 }
             }
         }
@@ -276,26 +245,12 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.leftMargin: root.visualRadius
-            anchors.rightMargin: root.visualRadius
-            height: Math.max(6, parent.height * 0.061)
+            height: Math.max(3, parent.height * 0.018)
             z: 1
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "transparent" }
-                GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.04) }
+                GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.018) }
             }
-        }
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: root.visualRadius
-            anchors.rightMargin: root.visualRadius
-            height: 1
-            radius: 1
-            z: 5
-            color: Qt.rgba(1, 1, 1, 0.12)
         }
 
         // Small deterministic grain points keep the large translucent area

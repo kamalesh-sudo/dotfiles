@@ -1,30 +1,39 @@
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import "../core" as Core
+import ".." as Local
 
-// Panel that grows out of a tiny point where the bar pill was,
-// rather than just popping open on top of it. Sequence:
-//   1. Bar.qml shrinks the pill down to a 6x6 dot (scale animation)
-//   2. this panel is born at that same dot and grows to full size
-// Closing reverses the sequence. Two separate surfaces, but the
-// transition reads as one continuous shape.
-//
-// Shares the "quickshell-bar" namespace with Bar.qml so it reuses
-// the same blur layer_rule from hyprland.lua.
-//
-// Status: power, volume, wallpaper, colorscheme, launcher and
-// clipboard are fully wired up. bluetooth/notifications/quicksettings
-// are still stubs (layout only, no backend yet).
-//
 // The "lock" action in the power menu assumes hyprlock is installed —
 // swap the command string in powerContent if you use something else.
 
 Item {
     id: root
+
+    property var modelData
+    property real normalWidth: 576
+    property real normalHeight: Core.Colors.barHeight + 3
+    property var enabledModes: ["launcher", "clipboard", "power", "notifications", "wifi", "wallpaper"]
+    readonly property bool onThisScreen: Core.AppState.morphScreenName === (modelData ? modelData.name : "")
+    readonly property bool expanded: enabledModes.indexOf(Core.AppState.barMorph) >= 0
+                                      && Core.AppState.barMorph !== "" && onThisScreen
+    readonly property var expandedSize: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : 1920)
+    readonly property real expandedWidth: expandedSize.w
+    readonly property real expandedHeight: expandedSize.h + normalHeight
+
+    width: expanded ? expandedWidth : normalWidth
+    height: expanded ? expandedHeight : normalHeight
+
+    Behavior on width {
+        NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
+    }
+    Behavior on height {
+        NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
+    }
 
     // Desktop entries are stable for the lifetime of the shell. Keep the
     // sorted base list on the persistent BarMorph instead of rebuilding it
@@ -52,124 +61,221 @@ Item {
         }
     }
 
-    Variants {
-        model: Quickshell.screens
+    Rectangle {
+        id: panel
+        anchors.fill: parent
+        radius: root.expanded ? Math.min(height / 2, 20) : 0
+        clip: true
+        color: root.expanded ? Core.MenuStyle.morphPanelColor : "transparent"
+        border.color: Core.Colors.accent
+        border.width: root.expanded ? Core.MenuStyle.borderWidth : 0
 
-        PanelWindow {
-            id: win
-            property var modelData
-            screen: modelData
+        MouseArea {
+            anchors { left: parent.left; right: parent.right; top: barContent.bottom; bottom: parent.bottom }
+            enabled: root.expanded
+            onClicked: Core.AppState.closeMorph()
+        }
 
-            readonly property bool onThisScreen: Core.AppState.morphScreenName === (modelData ? modelData.name : "")
-            readonly property bool active: Core.AppState.barMorph !== "" && onThisScreen
-            readonly property var target: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : 1920)
+        Item {
+            id: barContent
+            z: 1
+            width: root.width
+            height: root.normalHeight
+            // The collapsed bar and expanded island share this visual root.
+            // Once expanded, remove the old bar visuals and input from the
+            // surface instead of allowing them to show through the island.
+            opacity: root.expanded ? 0 : 1
+            enabled: !root.expanded
+            property var modelData: root.modelData
+            signal morphTriggered(string name)
+            onMorphTriggered: root.openMode(name, root.modelData)
 
-            anchors { top: true; bottom: true; left: true; right: true }
-            color: "transparent"
-            WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.namespace: Core.MenuStyle.namespace
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.keyboardFocus: (win.active && (Core.AppState.barMorph === "power"
-                                          || Core.AppState.barMorph === "launcher"
-                                          || Core.AppState.barMorph === "clipboard"
-                                          || Core.AppState.barMorph === "notifications"
-                                          || Core.AppState.barMorph === "wifi"
-                                          || Core.AppState.barMorph === "wallpaper"))
-                                         ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-            visible: win.active || closeAnim.running
+            readonly property real screenWidth: modelData ? modelData.width : 1920
+            readonly property real screenHeight: modelData ? modelData.height : 1080
 
-            property real panelX: Core.AppState.morphOriginX
-            property real panelY: Core.AppState.morphOriginY
-            property real panelW: Core.AppState.morphOriginWidth
-            property real panelH: Core.AppState.morphOriginHeight
-            property string displayedMorph: ""
-            onActiveChanged: {
-                if (active) {
-                    displayedMorph = Core.AppState.barMorph;
-                    panelX = Core.AppState.morphOriginX;
-                    panelY = Core.AppState.morphOriginY;
-                    panelW = Core.AppState.morphOriginWidth;
-                    panelH = Core.AppState.morphOriginHeight;
-                    closeAnim.stop();
-                    growAnim.stop();
-                    growAnim.start();
-                } else {
-                    growAnim.stop();
-                    closeAnim.start();
+            function triggerMorph(name) {
+                const screenName = modelData ? modelData.name : "";
+                if (Core.AppState.barMorph === name && Core.AppState.morphScreenName === screenName) {
+                    Core.AppState.closeMorph();
+                    return;
                 }
-            }
-
-            ParallelAnimation {
-                id: growAnim
-                NumberAnimation {
-                    target: win; property: "panelX"
-                    to: Core.AppState.morphOriginX - (win.target.w - Core.AppState.morphOriginWidth) / 2
-                    duration: 320; easing.type: Easing.OutQuint
-                }
-                NumberAnimation { target: win; property: "panelW"; to: win.target.w; duration: 320; easing.type: Easing.OutQuint }
-                NumberAnimation { target: win; property: "panelH"; to: win.target.h; duration: 320; easing.type: Easing.OutQuint }
-            }
-
-            SequentialAnimation {
-                id: closeAnim
-                ParallelAnimation {
-                    NumberAnimation { target: win; property: "panelX"; to: Core.AppState.morphOriginX; duration: 620; easing.type: Easing.InOutCubic }
-                    NumberAnimation { target: win; property: "panelW"; to: Core.AppState.morphOriginWidth; duration: 620; easing.type: Easing.InOutCubic }
-                    NumberAnimation { target: win; property: "panelH"; to: Core.AppState.morphOriginHeight; duration: 620; easing.type: Easing.InOutCubic }
-                }
-                ScriptAction { script: Core.AppState.morphClosed(Core.AppState.morphScreenName) }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                enabled: win.active
-                onClicked: Core.AppState.closeMorph()
+                morphTriggered(name);
             }
 
             Rectangle {
-                id: panel
-                x: win.panelX
-                y: win.panelY
-                width: Math.max(4, win.panelW)
-                height: Math.max(4, win.panelH)
-                radius: Math.min(height / 2, 20)
-                clip: true
+                id: barBg
+                anchors.fill: parent
+                anchors.topMargin: 2
+                anchors.bottomMargin: 1
+                opacity: Core.AppState.barTemporarilyHidden ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutQuad } }
+                radius: height / 2
+                color: Qt.rgba(Local.Colors.background.r, Local.Colors.background.g,
+                               Local.Colors.background.b, 0.14)
+                border.color: Local.Colors.accent
+                border.width: 1
 
-                color: Core.MenuStyle.morphPanelColor
-                border.color: Core.Colors.accent
-                border.width: Core.MenuStyle.borderWidth
-
-                MouseArea {
+                RowLayout {
+                    id: barRow
                     anchors.fill: parent
-                    onClicked: (mouse) => mouse.accepted = true
-                }
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    spacing: 0
 
-                readonly property real growFrac: {
-                    const originW = Core.AppState.morphOriginWidth;
-                    const span = win.target.w - originW;
-                    if (span <= 0) return 1;
-                    return Math.max(0, Math.min(1, (win.panelW - originW) / span));
-                }
-
-                Loader {
-                    id: contentLoader
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    active: win.active || closeAnim.running
-                    opacity: Math.max(0, Math.min(1, (panel.growFrac - 0.35) / 0.65))
-                    sourceComponent: {
-                        switch (win.displayedMorph) {
-                            case "power":     return powerContent;
-                            case "wallpaper": return wallpaperContent;
-                            case "launcher":    return launcherContent;
-                            case "clipboard":   return clipboardContent;
-                            case "notifications": return notificationContent;
-                            case "wifi":        return wifiContent;
-                            default: return stubContent;
+                    Item {
+                        Layout.preferredWidth: barRow.sideWidth
+                        Layout.fillHeight: true
+                        Item {
+                            id: workspaces
+                            anchors.verticalCenter: parent.verticalCenter
+                            readonly property int cellWidth: 26
+                            readonly property int cellHeight: 22
+                            readonly property int cellSpacing: 2
+                            readonly property int unit: cellWidth + cellSpacing
+                            readonly property int configuredWorkspaceCount: 5
+                            readonly property var workspaceList: {
+                                const current = Hyprland.workspaces.values || [];
+                                return Array.from({ length: configuredWorkspaceCount }, (_, i) => {
+                                    const id = i + 1;
+                                    const workspace = current.find(w => w.id === id);
+                                    return { id: id, occupied: workspace ? workspace.windows > 0 : false };
+                                });
+                            }
+                            width: configuredWorkspaceCount * unit - cellSpacing
+                            height: cellHeight
+                            readonly property int activeIndex: {
+                                const focusedId = Hyprland.focusedWorkspace?.id ?? 0;
+                                const index = workspaceList.findIndex(w => w.id === focusedId);
+                                return index >= 0 ? index : 0;
+                            }
+                            property int previousIndex: 0
+                            Component.onCompleted: previousIndex = activeIndex
+                            property real blobX: activeIndex * unit
+                            property real blobWidth: cellWidth
+                            onActiveIndexChanged: {
+                                const from = previousIndex;
+                                const to = activeIndex;
+                                previousIndex = to;
+                                blobTransition.spanX = Math.min(from * unit, to * unit);
+                                blobTransition.spanWidth = Math.abs(to * unit - from * unit) + cellWidth;
+                                blobTransition.settleX = to * unit;
+                                blobTransition.stop();
+                                blobTransition.start();
+                            }
+                            SequentialAnimation {
+                                id: blobTransition
+                                property real spanX: 0
+                                property real spanWidth: workspaces.cellWidth
+                                property real settleX: 0
+                                ParallelAnimation {
+                                    NumberAnimation { target: workspaces; property: "blobX"; to: blobTransition.spanX; duration: 140; easing.type: Easing.OutQuad }
+                                    NumberAnimation { target: workspaces; property: "blobWidth"; to: blobTransition.spanWidth; duration: 140; easing.type: Easing.OutQuad }
+                                }
+                                ParallelAnimation {
+                                    NumberAnimation { target: workspaces; property: "blobX"; to: blobTransition.settleX; duration: 180; easing.type: Easing.InOutQuad }
+                                    NumberAnimation { target: workspaces; property: "blobWidth"; to: workspaces.cellWidth; duration: 180; easing.type: Easing.InOutQuad }
+                                }
+                            }
+                            Rectangle { x: workspaces.blobX; width: workspaces.blobWidth; height: Local.Colors.barHeight - 17; radius: height / 2; color: Qt.rgba(1, 1, 1, 0.92) }
+                            Row {
+                                spacing: workspaces.cellSpacing
+                                Repeater {
+                                    model: workspaces.workspaceList
+                                    Item {
+                                        width: workspaces.cellWidth
+                                        height: workspaces.cellHeight
+                                        readonly property int workspaceNumber: modelData.id
+                                        readonly property bool isActive: index === workspaces.activeIndex
+                                        readonly property bool isOccupied: modelData.occupied
+                                        Text { anchors.centerIn: parent; text: workspaceNumber; font.family: Local.Colors.fontFamily; font.pixelSize: 12; font.weight: isActive ? Font.Bold : Local.Colors.textWeight; color: isActive ? "#101018" : Local.Colors.foreground; opacity: isActive ? 1.0 : (isOccupied ? 0.85 : 0.35) }
+                                        MouseArea { anchors.fill: parent; onClicked: Hyprland.dispatch("workspace " + workspaceNumber) }
+                                    }
+                                }
+                            }
                         }
                     }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Text {
+                            id: clockCenter
+                            anchors.centerIn: parent
+                            color: Local.Colors.foreground
+                            font.family: Local.Colors.fontFamily
+                            font.pixelSize: 13
+                            font.weight: Local.Colors.textWeight
+                            property string currentTime: Qt.formatDateTime(new Date(), "h:mm AP")
+                            text: currentTime
+                            Timer { interval: 1000 * 15; running: true; repeat: true; onTriggered: clockCenter.currentTime = Qt.formatDateTime(new Date(), "h:mm AP") }
+                        }
+                    }
+
+                    Item {
+                        Layout.preferredWidth: barRow.sideWidth
+                        Layout.fillHeight: true
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            spacing: 4
+                            Repeater {
+                                model: [
+                                    { glyph: "\uf1eb", morph: "wifi" },
+                                    { glyph: "\uf0f3", morph: "notifications" },
+                                    { glyph: "\uf011", morph: "power" }
+                                ]
+                                Rectangle {
+                                    width: 30
+                                    height: Local.Colors.barHeight - 10
+                                    radius: height / 2
+                                    color: (Core.AppState.barMorph === modelData.morph && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : ""))
+                                           ? Qt.rgba(1, 1, 1, 0.20)
+                                           : hoverArea.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: "Symbols Nerd Font"; font.pixelSize: 13; color: Local.Colors.foreground }
+                                    MouseArea { id: hoverArea; anchors.fill: parent; hoverEnabled: true; onClicked: barContent.triggerMorph(modelData.morph) }
+                                }
+                            }
+                        }
+                    }
+                    property real sideWidth: 220
                 }
             }
+        }
+
+        Loader {
+            id: contentLoader
+            z: 3
+            x: 12
+            y: 12
+            width: Math.max(0, parent.width - 24)
+            height: Math.max(0, parent.height - 24)
+            active: root.expanded
+            sourceComponent: {
+                switch (Core.AppState.barMorph) {
+                    case "power": return powerContent;
+                    case "wallpaper": return wallpaperContent;
+                    case "launcher": return launcherContent;
+                    case "clipboard": return clipboardContent;
+                    case "notifications": return notificationContent;
+                    case "wifi": return wifiContent;
+                    default: return stubContent;
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: Core.AppState
+        function onMorphRequested(name) {
+            if (root.enabledModes.indexOf(name) < 0) return;
+            if (Quickshell.screens.length > 1) {
+                const mon = Hyprland.focusedMonitor;
+                if (mon && root.modelData && mon.name !== root.modelData.name) return;
+            }
+            root.openMode(name, root.modelData);
+        }
+    }
 
             Component {
                 id: launcherContent
@@ -914,7 +1020,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 9
                                 Text {
-                                    text: "●  " + wifiRoot.connected.ssid
+                                    text: wifiRoot.connected ? "●  " + wifiRoot.connected.ssid : ""
                                     color: Core.Colors.foreground
                                     font.family: Core.Colors.fontFamily
                                     font.pixelSize: 10
@@ -1039,7 +1145,7 @@ Item {
                         }
                         Text {
                             visible: wifiRoot.view === "connected"
-                            text: "Connected\nSignal: " + wifiRoot.connected.signal + "%"
+                            text: wifiRoot.connected ? "Connected\nSignal: " + wifiRoot.connected.signal + "%" : ""
                             color: Core.Colors.muted
                             font.family: Core.Colors.fontFamily
                             font.pixelSize: 10
@@ -1153,6 +1259,21 @@ Item {
                     }
                 }
             }
+
+    function openMode(name, screen) {
+        if (root.enabledModes.indexOf(name) < 0) return;
+        const screenName = screen ? screen.name : "";
+        if (Core.AppState.barMorph === name && Core.AppState.morphScreenName === screenName) {
+            Core.AppState.closeMorph();
+            return;
         }
+        const width = Math.min(880, (screen ? screen.width : 1920) * 0.300);
+        Core.AppState.openMorph(name,
+            ((screen ? screen.width : 1920) - width) / 2,
+            0,
+            width,
+            root.normalHeight,
+            screenName,
+            screen ? screen.height : 1080);
     }
 }

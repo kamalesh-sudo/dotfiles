@@ -1,296 +1,53 @@
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Layouts
-import ".." as Local
+import "../core" as Core
 
-// Floating pill bar. Doesn't span the screen — it's centered and
-// narrower than the display, with real compositor blur behind it
-// (see the hyprland.lua snippet in the README, layer namespace is
-// "quickshell-bar").
+// The sole layer-shell surface for the bar and Dynamic Island. Its geometry
+// is fixed; only the BarMorph child changes size inside it.
 Variants {
-    id: barRoot
     model: Quickshell.screens
 
     PanelWindow {
-        id: win
-        property var modelData
+        id: window
+        required property var modelData
         screen: modelData
 
-        readonly property real screenWidth: modelData ? modelData.width : 1920
-        readonly property real screenHeight: modelData ? modelData.height : 1080
+        readonly property real barHeight: Core.Colors.barHeight + 3
+        readonly property real fixedWidth: Math.max(Math.min(880, modelData.width * 0.300), 900)
+        readonly property real fixedHeight: barHeight + 380
 
-        // window isn't anchored left+right, so wlr-layer-shell centers
-        // it for us — this offset converts local coords into real
-        // screen coords for BarMorph, which lives in its own window
-        readonly property real narrowOffsetX: (screenWidth - implicitWidth) / 2
-
-        readonly property bool morphActiveHere: Local.AppState.barMorph !== ""
-                                                 && Local.AppState.morphScreenName === (modelData ? modelData.name : "")
-
-        onMorphActiveHereChanged: {
-            // one surface hands off to the other in the same frame,
-            // no fade — the morph panel is born at the pill's exact
-            // geometry, so this is invisible to the user
-            if (morphActiveHere) barBg.visible = false;
-        }
-
-        Connections {
-            target: Local.AppState
-            function onMorphClosed(screenName) {
-                if (screenName === (win.modelData ? win.modelData.name : ""))
-                    barBg.visible = true;
-            }
-            function onMorphRequested(name) {
-                if (Quickshell.screens.length > 1) {
-                    const mon = Hyprland.focusedMonitor;
-                    if (mon && win.modelData && mon.name !== win.modelData.name) return;
-                }
-                win.triggerMorph(name);
-            }
-        }
-
-        function triggerMorph(name) {
-            const screenName = modelData ? modelData.name : "";
-            if (Local.AppState.barMorph === name && Local.AppState.morphScreenName === screenName) {
-                Local.AppState.closeMorph();
-                return;
-            }
-            const topLeft = barBg.mapToItem(null, 0, 0);
-            Local.AppState.openMorph(name,
-                topLeft.x + win.narrowOffsetX, topLeft.y,
-                barBg.width, barBg.height,
-                screenName, win.screenHeight);
-        }
-
-        anchors { top: true }
-        implicitWidth: Math.min(880, screenWidth * 0.300)
-        implicitHeight: Local.Colors.barHeight + 3
+        anchors.top: true
+        implicitWidth: fixedWidth
+        implicitHeight: fixedHeight
+        exclusiveZone: barHeight
+        exclusionMode: ExclusionMode.Normal
         color: "transparent"
-        visible: Local.AppState.showBar
-
-        WlrLayershell.layer: WlrLayer.Top
-        WlrLayershell.namespace: Local.MenuStyle.namespace
-        exclusionMode: ExclusionMode.Auto
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.namespace: Core.MenuStyle.namespace
+        WlrLayershell.keyboardFocus: morph.expanded
+            ? WlrKeyboardFocus.Exclusive
+            : WlrKeyboardFocus.None
+        visible: Core.AppState.showBar || morph.expanded
+        mask: Region {
+            item: morph
+        }
 
         Rectangle {
-            id: barBg
-            anchors.fill: parent
-            anchors.topMargin: 2
-            anchors.bottomMargin: 1
+            width: window.fixedWidth
+            height: window.fixedHeight
+            implicitWidth: window.fixedWidth
+            implicitHeight: window.fixedHeight
+            color: Qt.rgba(0, 0, 0, 0.001)
+        }
 
-            opacity: Local.AppState.barTemporarilyHidden ? 0 : 1
-            Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutQuad } }
-
-            radius: height / 2
-
-            // barely-there fill — the actual "glass" look comes from
-            // real compositor blur, not a fake dark overlay
-            color: Qt.rgba(Local.Colors.background.r, Local.Colors.background.g,
-                            Local.Colors.background.b, 0.14)
-            border.color: Local.Colors.accent
-            border.width: 1
-
-            RowLayout {
-                id: barRow
-                anchors.fill: parent
-                anchors.leftMargin: 18
-                anchors.rightMargin: 18
-                spacing: 0
-
-                // -- left: workspaces --
-                Item {
-                    Layout.preferredWidth: barRow.sideWidth
-                    Layout.fillHeight: true
-
-                    Item {
-                        id: workspaces
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        readonly property int cellWidth: 26
-                        readonly property int cellHeight: 22
-                        readonly property int cellSpacing: 2
-                        readonly property int unit: cellWidth + cellSpacing
-                        // Keep this synchronized with the five workspaces configured in hyprland.lua.
-                        readonly property int configuredWorkspaceCount: 5
-                        readonly property var workspaceList: {
-                            const current = Hyprland.workspaces.values || [];
-                            return Array.from({ length: configuredWorkspaceCount }, (_, i) => {
-                                const id = i + 1;
-                                const workspace = current.find(w => w.id === id);
-                                return { id: id, occupied: workspace ? workspace.windows > 0 : false };
-                            });
-                        }
-                        width: configuredWorkspaceCount * unit - cellSpacing
-                        height: cellHeight
-
-                        readonly property int activeIndex: {
-                            const focusedId = Hyprland.focusedWorkspace?.id ?? 0;
-                            const index = workspaceList.findIndex(w => w.id === focusedId);
-                            return index >= 0 ? index : 0;
-                        }
-
-                        property int previousIndex: 0
-                        Component.onCompleted: previousIndex = activeIndex
-
-                        property real blobX: activeIndex * unit
-                        property real blobWidth: cellWidth
-
-                        onActiveIndexChanged: {
-                            const from = previousIndex;
-                            const to = activeIndex;
-                            previousIndex = to;
-
-                            const fromX = from * unit;
-                            const toX = to * unit;
-
-                            blobTransition.spanX = Math.min(fromX, toX);
-                            blobTransition.spanWidth = Math.abs(toX - fromX) + cellWidth;
-                            blobTransition.settleX = toX;
-                            blobTransition.stop();
-                            blobTransition.start();
-                        }
-
-                        SequentialAnimation {
-                            id: blobTransition
-                            property real spanX: 0
-                            property real spanWidth: workspaces.cellWidth
-                            property real settleX: 0
-
-                            ParallelAnimation {
-                                NumberAnimation { target: workspaces; property: "blobX"; to: blobTransition.spanX; duration: 140; easing.type: Easing.OutQuad }
-                                NumberAnimation { target: workspaces; property: "blobWidth"; to: blobTransition.spanWidth; duration: 140; easing.type: Easing.OutQuad }
-                            }
-                            ParallelAnimation {
-                                NumberAnimation { target: workspaces; property: "blobX"; to: blobTransition.settleX; duration: 180; easing.type: Easing.InOutQuad }
-                                NumberAnimation { target: workspaces; property: "blobWidth"; to: workspaces.cellWidth; duration: 180; easing.type: Easing.InOutQuad }
-                            }
-                        }
-
-                        Rectangle {
-                            x: workspaces.blobX
-                            width: workspaces.blobWidth
-                            height: Local.Colors.barHeight - 17
-                            radius: height / 2
-                            color: Qt.rgba(1, 1, 1, 0.92)
-                        }
-
-                        Row {
-                            spacing: workspaces.cellSpacing
-
-                            Repeater {
-                                model: workspaces.workspaceList
-                                Item {
-                                    width: workspaces.cellWidth
-                                    height: workspaces.cellHeight
-
-                                    readonly property int workspaceNumber: modelData.id
-                                    readonly property bool isActive: index === workspaces.activeIndex
-                                    readonly property bool isOccupied: modelData.occupied
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: workspaceNumber
-                                        font.family: Local.Colors.fontFamily
-                                        font.pixelSize: 12
-                                        font.weight: isActive ? Font.Bold : Local.Colors.textWeight
-                                        color: isActive ? "#101018" : Local.Colors.foreground
-                                        opacity: isActive ? 1.0 : (isOccupied ? 0.85 : 0.35)
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: Hyprland.dispatch("workspace " + workspaceNumber)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // -- center: clock --
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    Text {
-                        id: clockCenter
-                        anchors.centerIn: parent
-                        color: Local.Colors.foreground
-                        font.family: Local.Colors.fontFamily
-                        font.pixelSize: 13
-                        font.weight: Local.Colors.textWeight
-
-                        property string currentTime: Qt.formatDateTime(new Date(), "h:mm AP")
-                        text: currentTime
-
-                        Timer {
-                            interval: 1000 * 15
-                            running: true
-                            repeat: true
-                            onTriggered: clockCenter.currentTime = Qt.formatDateTime(new Date(), "h:mm AP")
-                        }
-
-                    }
-                }
-
-                // -- right: icon cluster, each one morphs the bar --
-                Item {
-                    Layout.preferredWidth: barRow.sideWidth
-                    Layout.fillHeight: true
-
-                    Row {
-                        id: cluster
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                        spacing: 4
-
-                        Repeater {
-                            model: [
-                                // { glyph: "\uf078", morph: "quicksettings" },
-                                // { glyph: "\uf108", morph: "wallpaper" },
-                                // { glyph: "\udb81\ude27", morph: "colorscheme" },
-                                // { glyph: "\uf028", morph: "volume" },
-                                // { glyph: "\uf293", morph: "bluetooth" },
-                                { glyph: "\uf1eb", morph: "wifi" },
-                                { glyph: "\uf0f3", morph: "notifications" },
-                                { glyph: "\uf011", morph: "power" }
-                            ]
-
-                            Rectangle {
-                                id: clusterBtn
-                                width: 30
-                                height: Local.Colors.barHeight - 10
-                                radius: height / 2
-                                color: (Local.AppState.barMorph === modelData.morph
-                                        && Local.AppState.morphScreenName === (win.modelData ? win.modelData.name : ""))
-                                       ? Qt.rgba(1, 1, 1, 0.20)
-                                       : hoverArea.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
-
-                                Behavior on color { ColorAnimation { duration: 120 } }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.glyph
-                                    font.family: "Symbols Nerd Font"
-                                    font.pixelSize: 13
-                                    color: Local.Colors.foreground
-                                }
-
-                                MouseArea {
-                                    id: hoverArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: win.triggerMorph(modelData.morph)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                property real sideWidth: 220
-            }
+        BarMorph {
+            id: morph
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            modelData: window.modelData
+            normalWidth: Math.min(880, window.modelData.width * 0.300)
+            normalHeight: window.barHeight
         }
     }
 }

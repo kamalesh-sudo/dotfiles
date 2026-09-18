@@ -7,7 +7,6 @@ import "audioframe"
 
 ShellRoot {
     Bar {}
-    BarMorph {}
     WallpaperSelector {}
     ClipboardHistory {}
     AppLauncher {}

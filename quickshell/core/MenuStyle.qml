@@ -3,7 +3,11 @@ import QtQuick
 
 QtObject {
     readonly property color panelColor: Qt.rgba(Colors.background.r, Colors.background.g, Colors.background.b, 0.92)
-    readonly property color morphPanelColor: Qt.rgba(Colors.background.r, Colors.background.g, Colors.background.b, 0.22)
+    readonly property color morphPanelColor: Qt.rgba(
+        Colors.background.r * 0.90 + Colors.foreground.r * 0.10,
+        Colors.background.g * 0.90 + Colors.foreground.g * 0.10,
+        Colors.background.b * 0.90 + Colors.foreground.b * 0.10,
+        0.22)
     readonly property color subtleSurfaceColor: Qt.rgba(1, 1, 1, 0.05)
     readonly property color hoverSurfaceColor: Qt.rgba(1, 1, 1, 0.12)
     readonly property color notificationSurfaceColor: Qt.rgba(1, 1, 1, 0.06)

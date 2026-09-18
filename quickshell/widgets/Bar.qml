@@ -16,6 +16,7 @@ Variants {
         readonly property real barHeight: Core.Colors.barHeight + 3
         readonly property real fixedWidth: Math.max(Math.min(880, modelData.width * 0.300), 900)
         readonly property real fixedHeight: barHeight + 380
+        readonly property bool focusedFullscreen: ToplevelManager.activeToplevel?.fullscreen === true
 
         anchors.top: true
         implicitWidth: fixedWidth
@@ -28,7 +29,10 @@ Variants {
         WlrLayershell.keyboardFocus: morph.expanded
             ? WlrKeyboardFocus.Exclusive
             : WlrKeyboardFocus.None
-        visible: Core.AppState.showBar || morph.expanded
+        // Fullscreen is read from the active Wayland toplevel. Keeping the
+        // existing window/mask architecture means IPC keybinds still work,
+        // while no visual or pointer surface remains during fullscreen.
+        visible: !focusedFullscreen && (Core.AppState.showBar || morph.expanded)
         mask: Region {
             item: morph
         }

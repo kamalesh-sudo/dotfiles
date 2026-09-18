@@ -24,6 +24,9 @@ Item {
     readonly property var expandedSize: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : 1920)
     readonly property real expandedWidth: expandedSize.w
     readonly property real expandedHeight: expandedSize.h + normalHeight
+    readonly property real visualRadius: expanded
+        ? Math.min(height / 2, 20)
+        : normalHeight / 2
 
     width: expanded ? expandedWidth : normalWidth
     height: expanded ? expandedHeight : normalHeight
@@ -61,14 +64,271 @@ Item {
         }
     }
 
+    RectangularGlow {
+        id: ambientShadow
+        z: -2
+        anchors {
+            left: panel.left
+            right: panel.right
+            top: panel.top
+            bottom: panel.bottom
+            margins: root.visualRadius
+        }
+        clip: true
+        glowRadius: 14
+        spread: 0.015
+        cornerRadius: root.visualRadius
+        color: Qt.rgba(0, 0, 0, 0.055)
+    }
+
     Rectangle {
         id: panel
         anchors.fill: parent
-        radius: root.expanded ? Math.min(height / 2, 20) : 0
+        radius: root.visualRadius
         clip: true
-        color: root.expanded ? Core.MenuStyle.morphPanelColor : "transparent"
+        color: Core.MenuStyle.morphPanelColor
         border.color: Core.Colors.accent
-        border.width: root.expanded ? Core.MenuStyle.borderWidth : 0
+        border.width: Core.MenuStyle.borderWidth
+
+        // One static, shared material tint for both collapsed and expanded
+        // geometry. Keep it low enough that the wallpaper remains visible.
+        Rectangle {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                margins: root.visualRadius
+            }
+            z: 0
+            radius: Math.max(0, root.visualRadius - 2)
+            color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
+                           Core.Colors.accent.b, 0.018)
+        }
+
+        // One static, low-contrast light pass shared by both material sizes.
+        // The inset keeps the gradient inside the rounded silhouette.
+        Rectangle {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                margins: root.visualRadius
+            }
+            z: 0
+            radius: Math.max(0, root.visualRadius - 2)
+            gradient: Gradient {
+                GradientStop {
+                    position: 0.0
+                    color: Qt.rgba(Core.Colors.foreground.r,
+                                   Core.Colors.foreground.g,
+                                   Core.Colors.foreground.b, 0.018)
+                }
+                GradientStop { position: 0.52; color: "transparent" }
+                GradientStop {
+                    position: 1.0
+                    color: Qt.rgba(Core.Colors.background.r,
+                                   Core.Colors.background.g,
+                                   Core.Colors.background.b, 0.014)
+                }
+            }
+        }
+
+        // Directional ambient light: a soft upper-left bloom and a much
+        // quieter lower-right reflection. These are static and do not tick.
+        RadialGradient {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.leftMargin: root.visualRadius
+            anchors.topMargin: root.visualRadius
+            width: Math.min(Math.max(1, parent.width - root.visualRadius * 2) * 0.55, 300)
+            height: Math.min(Math.max(1, parent.height - root.visualRadius * 2) * 0.65, 180)
+            z: 0
+            horizontalRadius: width * 0.9
+            verticalRadius: height * 0.9
+            opacity: 0.28
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.16) }
+                GradientStop { position: 0.55; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.035) }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
+
+        RadialGradient {
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.rightMargin: root.visualRadius
+            anchors.bottomMargin: root.visualRadius
+            width: Math.min(Math.max(1, parent.width - root.visualRadius * 2) * 0.42, 240)
+            height: Math.min(Math.max(1, parent.height - root.visualRadius * 2) * 0.42, 150)
+            z: 0
+            horizontalRadius: width
+            verticalRadius: height
+            opacity: 0.14
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.06) }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
+
+        RadialGradient {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.rightMargin: root.visualRadius
+            anchors.topMargin: root.visualRadius
+            width: Math.min(Math.max(1, parent.width - root.visualRadius * 2) * 0.36, 220)
+            height: Math.min(Math.max(1, parent.height - root.visualRadius * 2) * 0.55, 150)
+            z: 0
+            horizontalRadius: width
+            verticalRadius: height
+            opacity: 0.075
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.045) }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
+
+        RadialGradient {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: root.visualRadius
+            anchors.bottomMargin: root.visualRadius
+            width: Math.min(Math.max(1, parent.width - root.visualRadius * 2) * 0.34, 210)
+            height: Math.min(Math.max(1, parent.height - root.visualRadius * 2) * 0.44, 130)
+            z: 0
+            horizontalRadius: width
+            verticalRadius: height
+            opacity: 0.055
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.035) }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
+
+        // One bounded specular pass around the four straight edge sections.
+        // The rounded-corner radius is left clear so no rectangular pixels
+        // can escape while the BarMorph is resizing.
+        Item {
+            id: specularEdges
+            anchors.fill: parent
+            z: 5
+            opacity: 0.70
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.leftMargin: root.visualRadius
+                anchors.rightMargin: root.visualRadius
+                height: Math.max(7, parent.height * 0.028)
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.11) }
+                    GradientStop { position: 0.38; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.035) }
+                    GradientStop { position: 1.0; color: "transparent" }
+                }
+            }
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: root.visualRadius
+                anchors.rightMargin: root.visualRadius
+                height: Math.max(5, parent.height * 0.024)
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 0.62; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.018) }
+                    GradientStop { position: 1.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.055) }
+                }
+            }
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.topMargin: root.visualRadius
+                anchors.bottomMargin: root.visualRadius
+                width: 10
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.06) }
+                    GradientStop { position: 0.45; color: Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.022) }
+                    GradientStop { position: 1.0; color: "transparent" }
+                }
+            }
+
+            Rectangle {
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.topMargin: root.visualRadius
+                anchors.bottomMargin: root.visualRadius
+                width: 10
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 0.55; color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.022) }
+                    GradientStop { position: 1.0; color: Qt.rgba(Core.Colors.foreground.r, Core.Colors.foreground.g, Core.Colors.foreground.b, 0.06) }
+                }
+            }
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: root.visualRadius
+            anchors.rightMargin: root.visualRadius
+            height: Math.max(6, parent.height * 0.061)
+            z: 1
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.04) }
+            }
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.leftMargin: root.visualRadius
+            anchors.rightMargin: root.visualRadius
+            height: 1
+            radius: 1
+            z: 5
+            color: Qt.rgba(1, 1, 1, 0.12)
+        }
+
+        // Small deterministic grain points keep the large translucent area
+        // from reading as a perfectly flat digital fill. The count is capped.
+        Repeater {
+            model: 96
+            delegate: Rectangle {
+                required property int index
+                x: root.visualRadius + (index * 47) % Math.max(1, panel.width - root.visualRadius * 2)
+                y: root.visualRadius + (index * 83) % Math.max(1, panel.height - root.visualRadius * 2)
+                width: 1
+                height: 1
+                z: 1
+                opacity: 0.012 + ((index * 13) % 5) * 0.002
+                visible: {
+                    const px = x + width / 2;
+                    const py = y + height / 2;
+                    const radius = root.visualRadius;
+                    const w = panel.width;
+                    const h = panel.height;
+                    if (px < radius && py < radius)
+                        return Math.hypot(px - radius, py - radius) <= radius;
+                    if (px > w - radius && py < radius)
+                        return Math.hypot(px - (w - radius), py - radius) <= radius;
+                    if (px < radius && py > h - radius)
+                        return Math.hypot(px - radius, py - (h - radius)) <= radius;
+                    if (px > w - radius && py > h - radius)
+                        return Math.hypot(px - (w - radius), py - (h - radius)) <= radius;
+                    return true;
+                }
+                color: index % 3 === 0 ? Core.Colors.foreground : Core.Colors.accent
+            }
+        }
 
         MouseArea {
             anchors { left: parent.left; right: parent.right; top: barContent.bottom; bottom: parent.bottom }
@@ -110,10 +370,8 @@ Item {
                 opacity: Core.AppState.barTemporarilyHidden ? 0 : 1
                 Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutQuad } }
                 radius: height / 2
-                color: Qt.rgba(Local.Colors.background.r, Local.Colors.background.g,
-                               Local.Colors.background.b, 0.14)
-                border.color: Local.Colors.accent
-                border.width: 1
+                color: "transparent"
+                border.width: 0
 
                 RowLayout {
                     id: barRow
@@ -228,9 +486,11 @@ Item {
                                     width: 30
                                     height: Local.Colors.barHeight - 10
                                     radius: height / 2
-                                    color: (Core.AppState.barMorph === modelData.morph && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : ""))
-                                           ? Qt.rgba(1, 1, 1, 0.20)
-                                           : hoverArea.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
+                                    color: hoverArea.pressed
+                                           ? Qt.rgba(0, 0, 0, 0.16)
+                                           : (Core.AppState.barMorph === modelData.morph && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : ""))
+                                             ? Core.MenuStyle.accentSurfaceColor
+                                             : hoverArea.containsMouse ? Core.MenuStyle.hoverSurfaceColor : "transparent"
                                     Behavior on color { ColorAnimation { duration: 120 } }
                                     Text { anchors.centerIn: parent; text: modelData.glyph; font.family: "Symbols Nerd Font"; font.pixelSize: 13; color: Local.Colors.foreground }
                                     MouseArea { id: hoverArea; anchors.fill: parent; hoverEnabled: true; onClicked: barContent.triggerMorph(modelData.morph) }
@@ -263,6 +523,19 @@ Item {
                 }
             }
         }
+    }
+
+    InnerShadow {
+        id: innerDepth
+        anchors.fill: panel
+        z: 4
+        source: panel
+        radius: 8
+        samples: 14
+        spread: 0.02
+        horizontalOffset: 0
+        verticalOffset: 1
+        color: Qt.rgba(0, 0, 0, 0.06)
     }
 
     Connections {

@@ -55,7 +55,7 @@ Item {
     function targetSize(name, screenWidth) {
         switch (name) {
             case "power":       return { w: 300, h: 100 };
-            case "wallpaper":   return { w: Math.min(screenWidth * 0.5, 720), h: 118 };
+            case "wallpaper":   return { w: Math.min(screenWidth * 0.5, 720), h: 80 };
             case "launcher":    return { w: 900, h: 380 };
             case "clipboard":   return { w: 560, h: 380 };
             case "wifi":        return root.notificationSize();

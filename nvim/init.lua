@@ -110,6 +110,8 @@ map("v", "<A-k>", ":move '<-2<CR>gv=gv", {
 -- Better visual indentation
 map("v", "<", "<gv")
 map("v", ">", ">gv")
+-- capsloack --> f13 --> esc
+map({"n", "i", "v", "c" }, "<C-space>", "<Esc>")
 
 -- ==========================================
 -- Lazy.nvim

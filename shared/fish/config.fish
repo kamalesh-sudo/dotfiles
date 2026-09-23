@@ -44,6 +44,8 @@ if status is-interactive
     abbr ll 'lsd -l'
     abbr la 'lsd -a'
     abbr lla 'lsd -la'
+    abbr lsf 'lsd ~/.config/fish/functions/'
+    abbr c 'clear'
 
     # Caelestia's terminal palette is KDE-session-only.
     if test $is_hyprland -eq 0

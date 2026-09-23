@@ -1,0 +1,471 @@
+{
+    "ai": {
+        "enableOpenai": false
+    },
+    "appearance": {
+        "anim": {
+            "durations": {
+                "scale": 0.35
+            }
+        },
+        "blur": true,
+        "blurMask": false,
+        "deformScale": 1.5,
+        "font": {
+            "body": {
+                "family": "GoogleSansFlex"
+            },
+            "headline": {
+                "family": "GoogleSansFlex"
+            },
+            "label": {
+                "family": "GoogleSansFlex"
+            },
+            "mono": {
+                "family": "CaskaydiaCove NF"
+            },
+            "scale": 0.88,
+            "title": {
+                "family": "GoogleSansFlex"
+            }
+        },
+        "islands": false,
+        "padding": {
+            "scale": 0.75
+        },
+        "pitchBlack": false,
+        "rounding": {
+            "scale": 0.7
+        },
+        "spacing": {
+            "scale": 0.75
+        },
+        "transparency": {
+            "base": 0.8,
+            "enabled": true,
+            "layers": 1
+        }
+    },
+    "background": {
+        "desktopClock": {
+            "enabled": true,
+            "position": "top-right",
+            "scale": 1.1
+        },
+        "desktopIconsEnabled": false,
+        "desktopLyrics": {
+            "autoHide": false,
+            "enabled": false
+        },
+        "desktopShapes": {
+            "autoHide": false,
+            "enabled": true,
+            "scale": 1
+        },
+        "slideshowRandom": false,
+        "videoWallpaperPaused": false,
+        "visualiser": {
+            "autoHide": false,
+            "enabled": false
+        },
+        "wallpaperFillMode": 1,
+        "wallpaperRecolor": true,
+        "wallpaperRecolorStrength": 0.20294744318181812
+    },
+    "bar": {
+        "clock": {
+            "background": true,
+            "showDate": false
+        },
+        "dock": {
+            "pinnedApps": [
+                "firefox",
+                "org.kde.dolphin",
+                "vesktop",
+                "org.telegram.desktop",
+                "com.github.IsmaelMartinez.teams_for_linux"
+            ]
+        },
+        "dodgeWindows": false,
+        "dragThreshold": 0,
+        "entries": [
+            {
+                "enabled": true,
+                "id": "logo",
+                "zone": "left"
+            },
+            {
+                "enabled": true,
+                "id": "greeter",
+                "zone": "left"
+            },
+            {
+                "enabled": true,
+                "id": "clock",
+                "zone": "middle"
+            },
+            {
+                "enabled": true,
+                "id": "statusIcons",
+                "zone": "right"
+            },
+            {
+                "enabled": true,
+                "id": "power",
+                "zone": "right"
+            },
+            {
+                "enabled": false,
+                "id": "updateIndicator",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "workspaces",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "github",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "kbLayoutIndicator",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfMemory",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "tray",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "dock",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "activeWindow",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "showDesktop",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "notificationsIndicator",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfCpu",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfStorage",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfNetwork",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfGpu",
+                "zone": "left"
+            },
+            {
+                "enabled": false,
+                "id": "perfBattery",
+                "zone": "left"
+            }
+        ],
+        "fontScaleOffset": -0.02,
+        "greeter": {
+            "compact": true,
+            "nightText": "Good Night"
+        },
+        "livePreviews": false,
+        "perElementFontScale": true,
+        "perElementPreviewScale": true,
+        "persistent": true,
+        "position": "left",
+        "previewFontScales": {
+            "activeWindow": -0.04,
+            "greeter": -0.04
+        },
+        "previewScale": 0.87,
+        "previewScaleWithBar": false,
+        "previewScales": {
+            "activeWindow": -0.37,
+            "greeter": -0.37
+        },
+        "scale": 0.95,
+        "showOnHover": false,
+        "statusIcons": [
+            {
+                "enabled": false,
+                "id": "lockStatus"
+            },
+            {
+                "enabled": false,
+                "id": "microphone"
+            },
+            {
+                "enabled": false,
+                "id": "kbLayout"
+            },
+            {
+                "enabled": true,
+                "id": "network"
+            },
+            {
+                "enabled": true,
+                "id": "ethernet"
+            },
+            {
+                "enabled": true,
+                "id": "bluetooth"
+            },
+            {
+                "enabled": true,
+                "id": "audio"
+            },
+            {
+                "enabled": true,
+                "id": "battery"
+            },
+            {
+                "enabled": false,
+                "id": "peripheralBattery"
+            },
+            {
+                "enabled": false,
+                "id": "nightlight"
+            },
+            {
+                "enabled": true,
+                "id": "notifications"
+            }
+        ],
+        "tray": {
+            "background": true,
+            "compact": true,
+            "recolour": false
+        }
+    },
+    "border": {
+        "rounding": 12,
+        "smoothing": 22,
+        "thickness": 2
+    },
+    "dashboard": {
+        "dragThreshold": 45,
+        "hoverThickness": 1,
+        "hoverWidth": 48,
+        "mediaUpdateInterval": 2000,
+        "profilePicShape": 12,
+        "resourceUpdateInterval": 10000,
+        "showHyprlandSplash": true,
+        "showMedia": false,
+        "showTerminal": false,
+        "showWeather": false,
+        "useMediaShapes": true
+    },
+    "general": {
+        "apps": {
+            "explorer": [
+                "yazi"
+            ]
+        },
+        "caelestiaMode": true,
+        "checkUpdates": false,
+        "idle": {
+            "timeouts": [
+                {
+                    "idleAction": "lock",
+                    "timeout": 180
+                },
+                {
+                    "idleAction": "dpms off",
+                    "returnAction": "dpms on",
+                    "timeout": 300
+                },
+                {
+                    "enabled": true,
+                    "idleAction": [
+                        "suspendThenHibernate"
+                    ],
+                    "timeout": 600
+                }
+            ]
+        },
+        "krohnkiteEnabled": true,
+        "krohnkiteLastLayout": "Spiral",
+        "logo": "",
+        "magicLampEnabled": true
+    },
+    "launcher": {
+        "clipboardMaxEntries": 100,
+        "dragThreshold": 155,
+        "enableDangerousActions": false,
+        "enabled": true,
+        "favouriteApps": [
+            "firefox",
+            "org.kde.dolphin",
+            "vesktop",
+            "org.telegram.desktop",
+            "com.github.IsmaelMartinez.teams_for_linux"
+        ],
+        "hoverThickness": 9,
+        "hoverWidth": 24,
+        "maxShown": 6,
+        "maxWallpapers": 5,
+        "showBrowseOnEmpty": false,
+        "showOnHover": false,
+        "showPowerMenu": false,
+        "useFuzzy": {
+            "actions": true,
+            "apps": true,
+            "schemes": true,
+            "variants": true,
+            "wallpapers": true
+        },
+        "vimKeybinds": false
+    },
+    "lock": {
+        "blurWallpaper": true,
+        "enableFprint": false,
+        "rotateProfilePic": true,
+        "showHibernate": false,
+        "showReboot": true,
+        "showShutdown": true,
+        "showSwitchUser": false
+    },
+    "nexus": {
+        "networkRescanInterval": 119000
+    },
+    "notifs": {
+        "actionOnClick": true,
+        "fullscreen": "on",
+        "openExpanded": false,
+        "position": "top-right"
+    },
+    "osd": {
+        "enableMicrophone": false
+    },
+    "overview": {
+        "baseDuration": 266,
+        "blobScaleSpeed": 1.6,
+        "disableWallpaperBlur": false,
+        "easingType": 3,
+        "hoverThickness": 41
+    },
+    "services": {
+        "arpcAppName": "Caelestia Shell",
+        "arpcCaelestiaInfo": true,
+        "arpcDetails": "",
+        "arpcEnabled": true,
+        "arpcLargeImage": "",
+        "arpcSmallImage": "",
+        "arpcState": "",
+        "arpcSteamAutoDetect": true,
+        "visualiserBars": 85
+    },
+    "tabSwitch": {
+        "allScreens": true,
+        "currentDesktopOnly": true,
+        "enabled": true,
+        "showMinimized": true
+    },
+    "utilities": {
+        "dragThreshold": 45,
+        "hoverThickness": 1,
+        "hoverWidth": 100,
+        "quickToggles": [
+            {
+                "enabled": true,
+                "id": "wifi"
+            },
+            {
+                "enabled": true,
+                "id": "bluetooth"
+            },
+            {
+                "enabled": false,
+                "id": "mic"
+            },
+            {
+                "enabled": true,
+                "id": "settings"
+            },
+            {
+                "enabled": true,
+                "id": "gameMode"
+            },
+            {
+                "enabled": false,
+                "id": "colorpicker"
+            },
+            {
+                "enabled": false,
+                "id": "dnd"
+            },
+            {
+                "enabled": true,
+                "id": "vpn"
+            },
+            {
+                "enabled": false,
+                "id": "wallpaper"
+            },
+            {
+                "enabled": true,
+                "id": "badapple"
+            },
+            {
+                "enabled": false,
+                "id": "pauseWallpaper"
+            },
+            {
+                "enabled": false,
+                "id": "nightlight"
+            }
+        ],
+        "showGifRecorder": false,
+        "toasts": {
+            "fullscreen": "all",
+            "gameModeChanged": true,
+            "transparency": true
+        }
+    },
+    "webCursor": {
+        "build": {
+            "auto": true,
+            "autoInstall": true
+        },
+        "cursor": {
+            "blacklist": [
+            ],
+            "enabled": true,
+            "height": 128,
+            "selectTheme": "variant4-ciallo",
+            "themesDir": "/home/kamal/.config/caelestia/webcursor",
+            "width": 120
+        },
+        "shortcut": "Meta+Ctrl+C",
+        "upload": {
+            "installGlobal": true
+        }
+    }
+}

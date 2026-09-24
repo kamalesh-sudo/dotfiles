@@ -1,0 +1,169 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import QtQuick.Layouts
+import Caelestia.Config
+import qs.services
+import qs.modules.nexus.common
+
+PageBase {
+    id: root
+
+    property bool idleSuspendEnabledState: false
+    property int idleSuspendMinutesState: 10
+
+    function cloneEntry(entry: var): var {
+        const out = {};
+        for (const k in entry)
+            out[k] = entry[k];
+        return out;
+    }
+
+    function clonedIdleTimeouts(): var {
+        const source = GlobalConfig.general.idle.timeouts ?? [];
+        const copy = [];
+
+        for (const entry of source)
+            copy.push(root.cloneEntry(entry));
+
+        return copy;
+    }
+
+    function refreshIdleSuspendState(): void {
+        const seconds = IdleActions.suspendSeconds;
+        root.idleSuspendEnabledState = seconds > 0;
+        root.idleSuspendMinutesState = seconds > 0 ? Math.round(seconds / 60) : 10;
+    }
+
+    function setSuspendTimeoutMinutes(minutes: int): void {
+        const sanitizedMinutes = Math.max(1, Math.min(180, Math.round(minutes)));
+        const timeoutSeconds = sanitizedMinutes * 60;
+        const updated = root.clonedIdleTimeouts();
+        let found = false;
+
+        for (let i = 0; i < updated.length; i++) {
+            if (!IdleActions.isSuspendIdleAction(updated[i].idleAction))
+                continue;
+
+            updated[i].timeout = timeoutSeconds;
+            if (updated[i].enabled === undefined)
+                updated[i].enabled = true;
+            found = true;
+        }
+
+        if (!found) {
+            updated.push({
+                timeout: timeoutSeconds,
+                idleAction: ["suspendThenHibernate"],
+                enabled: true,
+                respectInhibitors: true
+            });
+        }
+
+        GlobalConfig.general.idle.timeouts = updated;
+        root.refreshIdleSuspendState();
+    }
+
+    function setSuspendTimeoutEnabled(enabled: bool): void {
+        const updated = root.clonedIdleTimeouts();
+        let found = false;
+
+        for (let i = 0; i < updated.length; i++) {
+            if (!IdleActions.isSuspendIdleAction(updated[i].idleAction))
+                continue;
+
+            updated[i].enabled = enabled;
+            found = true;
+        }
+
+        if (!found && enabled) {
+            updated.push({
+                timeout: 600,
+                idleAction: ["suspendThenHibernate"],
+                enabled: true,
+                respectInhibitors: true
+            });
+        }
+
+        GlobalConfig.general.idle.timeouts = updated;
+        root.refreshIdleSuspendState();
+    }
+
+    Component.onCompleted: root.refreshIdleSuspendState()
+
+    title: qsTr("Power")
+
+    ColumnLayout {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        width: root.cappedWidth
+        spacing: Tokens.spacing.extraSmall / 2
+
+        SectionHeader {
+            first: true
+            text: qsTr("Idle & sleep")
+        }
+
+        ToggleRow {
+            first: true
+            text: qsTr("Idle suspend")
+            subtext: qsTr("Suspend the system after inactivity")
+            checked: root.idleSuspendEnabledState
+            onToggled: root.setSuspendTimeoutEnabled(checked)
+        }
+
+        StepperRow {
+            enabled: root.idleSuspendEnabledState
+            label: qsTr("Idle suspend timer")
+            subtext: root.idleSuspendEnabledState
+                     ? qsTr("Suspend after %1 minute(s) of inactivity").arg(root.idleSuspendMinutesState)
+                     : qsTr("Enable idle suspend to apply a timer")
+            value: root.idleSuspendMinutesState
+            from: 1
+            to: 180
+            stepSize: 1
+            onMoved: v => {
+                if (root.idleSuspendEnabledState)
+                    root.setSuspendTimeoutMinutes(v)
+            }
+        }
+
+        ToggleRow {
+            text: qsTr("Lock before sleep")
+            subtext: qsTr("Lock the session before suspending")
+            checked: Config.general.idle.lockBeforeSleep
+            onToggled: GlobalConfig.general.idle.lockBeforeSleep = checked
+        }
+
+        ToggleRow {
+            text: qsTr("Inhibit while audio")
+            subtext: qsTr("Prevent idle actions while audio is playing")
+            checked: Config.general.idle.inhibitWhenAudio
+            onToggled: GlobalConfig.general.idle.inhibitWhenAudio = checked
+        }
+
+        ToggleRow {
+            last: true
+            text: qsTr("Inhibit while charging")
+            subtext: qsTr("Prevent idle actions while charging")
+            checked: Config.general.idle.inhibitWhenCharging
+            onToggled: GlobalConfig.general.idle.inhibitWhenCharging = checked
+        }
+
+        SectionHeader {
+            text: qsTr("Battery warnings")
+        }
+
+        StepperRow {
+            first: true
+            last: true
+            label: qsTr("Critical battery level")
+            subtext: qsTr("Percentage at which the critical warning fires")
+            value: Config.general.battery.criticalLevel
+            from: 1
+            to: 50
+            stepSize: 1
+            onMoved: v => GlobalConfig.general.battery.criticalLevel = v
+        }
+    }
+}

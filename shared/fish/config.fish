@@ -39,13 +39,15 @@ if status is-interactive
     abbr gbd 'git branch -d'
     abbr gco 'git checkout'
     abbr gsh 'git show'
-
+    abbr IP 'ip -br -c address'
     abbr l 'lsd'
     abbr ll 'lsd -l'
     abbr la 'lsd -a'
     abbr lla 'lsd -la'
     abbr lsf 'lsd ~/.config/fish/functions/'
     abbr c 'clear'
+    abbr syu 'paru -Syu --noconfirm'
+
 
     # Caelestia's terminal palette is KDE-session-only.
     if test $is_hyprland -eq 0

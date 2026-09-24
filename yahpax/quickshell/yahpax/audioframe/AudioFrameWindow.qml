@@ -1,26 +1,16 @@
 import QtQuick
-import Quickshell
-import Quickshell.Wayland
-import "../core" as Core
 
 Item {
 
     id: root
 
-    required property var targetScreen
-
-    // Create the configuration locally.
     Config {
         id: config
     }
 
-
-    // ============================================================
-    // POSITION
-    // ============================================================
-
-    anchors.top: config.position === "top" ? parent.top : undefined
-    anchors.bottom: config.position === "bottom" ? parent.bottom : undefined
+    // Keep the visualizer as a finite surface at the bottom center.
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.bottom: parent.bottom
 
 
     // ============================================================
@@ -34,20 +24,6 @@ Item {
     height:
         config.visualizerHeight +
         config.margin * 2
-
-    Core.SharpShape {
-        anchors.fill: parent
-        cutBottomLeft: true
-        cutBottomRight: true
-        cutAmount: Core.MenuStyle.radius
-        fillColor: "transparent"
-        strokeWidth: 0
-    }
-
-
-    // ============================================================
-    // AUDIO FRAME
-    // ============================================================
 
     AudioFrame {
 

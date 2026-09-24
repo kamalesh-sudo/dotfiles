@@ -271,8 +271,6 @@ QtObject {
         readonly property real screenPadding: -0
         // Refresh interval for relative notification timestamps.
         readonly property int clockRefreshInterval: 5000
-        // Right/top screen offset before attachment to the bar.
-        readonly property real edgeMargin: 16
         // Automatic popup lifetime, in milliseconds.
         readonly property int popupDuration: 3000
         // Notification icon container size.
@@ -291,8 +289,6 @@ QtObject {
         readonly property real bodyFontSize: 11
         // Notification fallback bell icon size.
         readonly property real fallbackIconFontSize: 16
-        // Notification chevron icon size.
-        readonly property real chevronFontSize: 12
         // Notification Center clear icon size.
         readonly property real clearFontSize: 13
         // Notification dismiss icon size.
@@ -321,8 +317,6 @@ QtObject {
         readonly property real expandThreshold: 16
         // Horizontal multiplier used when removing a popup.
         readonly property real removalDistance: 2
-        // Extra hit area around the notification expand chevron.
-        readonly property real chevronHitSlop: -8
     }
 
     // Surface/blur customization values. The actual compositor blur remains

@@ -89,12 +89,10 @@ Variants {
         NotificationPopup {
             id: notifications
             modelData: root.modelData
-            attachedTop: bar.y + bar.inputItem.y + bar.inputItem.height
             anchors.fill: parent
         }
 
         AudioFrameWindow {
-            targetScreen: root.modelData
         }
         }
 

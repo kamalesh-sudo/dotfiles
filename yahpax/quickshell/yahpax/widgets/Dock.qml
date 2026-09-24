@@ -54,7 +54,9 @@ Item {
                     Rectangle {
                         id: body
                         anchors.fill: parent
-                        color: entry.hovered ? Local.Colors.widgetHover : Core.MenuStyle.globalSurfaceColor
+                        // Keep dock entries on the same wallpaper-derived
+                        // accent family instead of the near-black panel fill.
+                        color: entry.hovered ? Local.Colors.accentSoftSurface : Local.Colors.accentFaintSurface
                         border.width: Core.MenuStyle.dock.entryBorderWidth
                         border.color: entry.hovered
                             ? Local.Colors.accent
@@ -111,7 +113,7 @@ Item {
                             spacing: 1
                             Text {
                                 text: modelData.label
-                                color: entry.hovered ? Local.Colors.accent : Local.Colors.foreground
+                                color: entry.hovered ? Local.Colors.accent : Local.Colors.secondaryText
                                 font.pixelSize: Core.MenuStyle.dock.titleFontSize
                                 font.bold: entry.hovered
                                 font.family: Local.Colors.fontFamily

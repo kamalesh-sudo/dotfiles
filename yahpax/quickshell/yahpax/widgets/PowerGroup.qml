@@ -82,7 +82,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: modelData.glyph
-                        color: Core.Colors.icon
+                        color: Core.Colors.secondaryText
                         font.family: Core.Colors.iconFontFamily
                         font.pixelSize: 13
                     }

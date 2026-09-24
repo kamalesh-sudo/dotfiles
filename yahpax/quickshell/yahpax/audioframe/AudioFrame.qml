@@ -68,18 +68,6 @@ Item {
 
 
     // ============================================================
-    // PALETTE
-    // ============================================================
-
-    PaletteAdapter {
-
-        id: paletteAdapter
-
-        config: root.config
-    }
-
-
-    // ============================================================
     // AUDIO STATE
     // ============================================================
 
@@ -902,52 +890,8 @@ Item {
             }
 
 
-            // =====================================================
-            // PALETTE / COLOR
-            // =====================================================
-
-            if (
-                root.config.usePalette &&
-                paletteAdapter.colors.length > 0
-            ) {
-
-                const colors =
-                    paletteAdapter.colors
-
-
-           const gradient =
-    ctx.createLinearGradient(
-        0,
-        0,
-        width,
-        0
-    )
-
-gradient.addColorStop(
-    0.0,
-    colors[0]
-)
-
-gradient.addColorStop(
-    0.5,
-    colors[1]
-)
-
-gradient.addColorStop(
-    1.0,
-    colors[2]
-)
-
-ctx.fillStyle = gradient
-
-            } else {
-
-                // Fallback to the normal
-                // visualizer color.
-
-                ctx.fillStyle =
-                    root.color
-            }
+            // Use Yahpax's existing wallpaper-aware accent globally.
+            ctx.fillStyle = root.color
 
 
             ctx.beginPath()

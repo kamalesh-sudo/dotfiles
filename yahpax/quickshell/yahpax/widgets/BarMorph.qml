@@ -191,7 +191,17 @@ Item {
                                 previousIndex = activeIndex;
                                 blobX = activeIndex * unit;
                             }
-                            Rectangle { x: workspaces.blobX; width: workspaces.cellWidth; height: Local.Colors.barHeight - 17; radius: height / 2; color: Core.MenuStyle.toggleRule.offSurface }
+                            Rectangle {
+                                x: workspaces.blobX
+                                width: workspaces.cellWidth
+                                height: Local.Colors.barHeight - 17
+                                radius: height / 2
+                                // Keep the active workspace marker exactly
+                                // matched to its own dynamic border color.
+                                color: Core.MenuStyle.hoverRule.surface
+                                border.width: Core.MenuStyle.sharedRadius.border
+                                border.color: Core.Colors.accent
+                            }
                             Row {
                                 spacing: workspaces.cellSpacing
                                 Repeater {
@@ -216,7 +226,7 @@ Item {
                         Text {
                             id: clockCenter
                             anchors.centerIn: parent
-                            color: Local.Colors.foreground
+                            color: Local.Colors.secondaryText
                             font.family: Local.Colors.fontFamily
                             font.pixelSize: 13
                             font.weight: Local.Colors.labelWeight
@@ -243,11 +253,13 @@ Item {
                                     width: 30
                                     height: Local.Colors.barHeight - 10
                                     radius: height / 2
+                                    border.width: Core.MenuStyle.sharedRadius.border
+                                    border.color: Core.Colors.accent
                                     color: barIconMouse.pressed
                                            ? Core.MenuStyle.toggleRule.pressedSurface
                                            : (Core.AppState.barMorph === modelData.morph && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : ""))
-                                             ? Core.MenuStyle.toggleRule.onSurface
-                                             : barIconMouse.containsMouse ? Core.MenuStyle.toggleRule.hoverSurface : Core.MenuStyle.toggleRule.offSurface
+                                             ? Core.MenuStyle.hoverRule.surface
+                                             : Core.MenuStyle.hoverRule.surface
                                     Behavior on color {
                                         ColorAnimation {
                                             duration: Core.MenuStyle.hoverRule.duration
@@ -255,7 +267,7 @@ Item {
                                             easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastEffectsCurve
                                         }
                                     }
-                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: Local.Colors.iconFontFamily; font.pixelSize: 13; color: Local.Colors.icon }
+                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: Local.Colors.iconFontFamily; font.pixelSize: 13; color: Local.Colors.secondaryText }
                                     MouseArea {
                                         id: barIconMouse
                                         anchors.fill: parent

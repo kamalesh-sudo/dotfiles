@@ -98,7 +98,8 @@ hl.config({
 
         col = {
             active_border   = "rgba(33ccffee)",
-            inactive_border = "rgba(595959aa)",
+            -- Keep inactive borders visible, but softer than the active border.
+            inactive_border = "rgba(33ccff88)",
         },
 
         resize_on_border = true,

@@ -8,8 +8,13 @@ import "../core" as Core
 Item {
         id: window
         required property var modelData
-        property real attachedTop: 0
         readonly property bool historyOpen: Core.AppState.notificationsOpen
+        // The automatic popup and the notification center have separate
+        // visibility/layout states, even though they share this surface.
+        readonly property bool popupVisible: !historyOpen && hasNotifications
+        readonly property bool centerVisible: historyOpen
+        // One reversible progress value drives both opening and closing.
+        property real surfaceProgress: (centerVisible || popupVisible) ? 1 : 0
         readonly property int maxPopups: Core.MenuStyle.notification.maxVisible
         // The outer surface includes the shared padding; this keeps the
         // actual card width compact and stable at the screen edge.
@@ -22,8 +27,16 @@ Item {
             : Core.AppState.popupItems()
         readonly property bool hasNotifications: visibleNotifications.length > 0
         // Remove the surface from the global input mask while fully closed.
-        property Item inputItem: (historyOpen || hasNotifications) ? surface : null
+        property Item inputItem: (centerVisible || popupVisible) ? surface : null
         property real clock: Date.now()
+
+        Behavior on surfaceProgress {
+            NumberAnimation {
+                duration: Core.MenuStyle.menuTransition.popupDuration
+                easing.type: Core.MenuStyle.bezierSplineType
+                easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve
+            }
+        }
 
         anchors.fill: parent
         readonly property int popupHeight: Math.min(maxPanelHeight,
@@ -57,10 +70,10 @@ Item {
         // compositor blur and input region belong to this layer only.
         MenuPanel {
             id: surface
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.topMargin: window.attachedTop
-            anchors.rightMargin: Core.MenuStyle.notification.edgeMargin
+            // Both automatic popups and Notification Center use the same
+            // screen-attached top-right coordinate space.
+            x: parent.width - width
+            y: 0
             width: window.panelWidth
             height: window.popupHeight
             // Layer 2/3 are created by each delegate below. The same MenuPanel
@@ -68,8 +81,8 @@ Item {
             surfaceColor: Core.MenuStyle.globalSurfaceColor
             outlineColor: Core.MenuStyle.globalBorderColor
             outlineWidth: Core.MenuStyle.sharedRadius.border
-            surfaceOpacity: (historyOpen || hasNotifications) ? 1 : 0
-            transform: Translate { y: (historyOpen || hasNotifications) ? 0 : Core.MenuStyle.popup.entryOffset }
+            surfaceOpacity: window.surfaceProgress
+            transform: Translate { y: (1 - window.surfaceProgress) * Core.MenuStyle.popup.entryOffset }
 
             Behavior on height {
                 NumberAnimation {
@@ -79,18 +92,11 @@ Item {
                 }
             }
 
-            Behavior on opacity {
+            Behavior on x {
                 NumberAnimation {
                     duration: Core.MenuStyle.menuTransition.popupDuration
                     easing.type: Core.MenuStyle.bezierSplineType
-                    easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastEffectsCurve
-                }
-            }
-            Behavior on y {
-                NumberAnimation {
-                    duration: Core.MenuStyle.menuTransition.popupDuration
-                    easing.type: Core.MenuStyle.bezierSplineType
-                    easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastSpatialCurve
+                    easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve
                 }
             }
 
@@ -107,7 +113,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: "Notifications"
-                        color: Core.Colors.onSurface
+                        color: Core.Colors.secondaryText
                         font.family: Core.Colors.fontFamily
                         font.pixelSize: Core.MenuStyle.notification.headerFontSize
                         font.weight: Core.Colors.titleWeight
@@ -117,6 +123,8 @@ Item {
                         implicitWidth: Core.MenuStyle.notification.clearButtonSize
                         implicitHeight: Core.MenuStyle.notification.clearButtonSize
                         radius: height / 2
+                        border.width: Core.MenuStyle.sharedRadius.border
+                        border.color: Core.Colors.accent
                         color: clearMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : "transparent"
 
                         Text {
@@ -140,6 +148,7 @@ Item {
                     id: list
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    visible: !window.historyOpen || window.hasNotifications
                     clip: true
                     spacing: Core.MenuStyle.sharedSpacing.medium
                     model: window.visibleNotifications
@@ -212,7 +221,9 @@ Item {
                                 : Core.MenuStyle.globalSurfaceColor
                             strokeWidth: Core.MenuStyle.sharedRadius.border
                             strokeColor: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalBorderColor
-                            property bool expanded: window.historyOpen
+                            // Popup cards stay compact; only center cards use
+                            // the center's expanded content presentation.
+                            property bool expanded: !wrapper.popupMode
 
                             Component.onCompleted: x = 0
 
@@ -233,8 +244,13 @@ Item {
 
                             Timer {
                                 id: expiry
-                                interval: Core.MenuStyle.notification.popupDuration
-                                running: !window.historyOpen && wrapper.modelData.popup
+                                // Keep the expiry anchored to this item's
+                                // arrival, even if it waited in the FIFO
+                                // queue before receiving a visible slot.
+                                interval: Math.max(1,
+                                    Core.MenuStyle.notification.popupDuration
+                                    - Math.max(0, Date.now() - Number(wrapper.modelData.createdAt || Date.now())))
+                                running: wrapper.popupMode && wrapper.modelData.popup
                                 onTriggered: Core.AppState.expireNotification(wrapper.modelData.id)
                             }
 
@@ -317,24 +333,6 @@ Item {
                                         }
                                     }
 
-                                    // The popup has one deliberate control:
-                                    // the expand/collapse chevron.
-                                    Text {
-                                        id: chevron
-                                        Layout.alignment: Qt.AlignVCenter
-                                        text: card.expanded ? "\uf077" : "\uf078"
-                                        color: Core.Colors.icon
-                                        font.family: Core.Colors.iconFontFamily
-                                        font.pixelSize: Core.MenuStyle.notification.chevronFontSize
-
-                                        MouseArea {
-                                            id: expandMouse
-                                            anchors.fill: parent
-                                            anchors.margins: Core.MenuStyle.popup.chevronHitSlop
-                                            onClicked: if (wrapper.popupMode) card.expanded = !card.expanded
-                                        }
-                                    }
-
                                     Core.SharpShape {
                                         id: dismissButton
                                         Layout.alignment: Qt.AlignVCenter
@@ -345,10 +343,9 @@ Item {
                                         cutBottomLeft: true
                                         cutBottomRight: true
                                         cutAmount: Core.MenuStyle.radius
-                                        fillColor: dismissMouse.containsMouse
-                                            ? Core.MenuStyle.hoverRule.surface
-                                            : Core.MenuStyle.globalSurfaceColor
-                                        strokeWidth: 0
+                                        strokeColor: Core.Colors.accent
+                                        strokeWidth: Core.MenuStyle.sharedRadius.border
+                                        fillColor: Core.MenuStyle.hoverRule.surface
 
                                         Text {
                                             anchors.centerIn: parent
@@ -365,7 +362,7 @@ Item {
                                             acceptedButtons: Qt.LeftButton
                                             onClicked: {
                                                 expiry.stop()
-                                                Core.AppState.hideNotificationPopup(wrapper.modelData.id)
+                                                Core.AppState.dismissNotification(wrapper.modelData.id)
                                             }
                                         }
                                     }
@@ -476,6 +473,18 @@ Item {
                             }
                         }
                     }
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: window.historyOpen && !window.hasNotifications
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: "Nothing here, shut up and do your work."
+                    color: Core.Colors.secondaryText
+                    font.family: Core.Colors.fontFamily
+                    font.pixelSize: Core.MenuStyle.notification.bodyFontSize
                 }
             }
         }

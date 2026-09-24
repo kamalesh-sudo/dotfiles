@@ -6,7 +6,7 @@ QtObject {
     // POSITION
     // ============================================================
 
-    readonly property string position: "top"
+    readonly property string position: "bottom"
     readonly property string alignment: "center"
     readonly property int margin: 0
 
@@ -20,24 +20,6 @@ QtObject {
 
     readonly property real maximumHeight: 45
     readonly property real minimumHeight: 0
-
-
-    // ============================================================
-    // DYNAMIC PALETTE
-    // ============================================================
-
-    readonly property bool usePalette: true
-
-    readonly property string paletteFile:
-        "~/.cache/ryoku/colors.json"
-
-    readonly property var paletteKeys: [
-        "primary",
-        "secondary",
-        "tertiary"
-    ]
-
-    readonly property color visualizerColor: "#ffffff"
 
 
     // ============================================================

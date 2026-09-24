@@ -12,8 +12,8 @@ Item {
     id: root
 
     property var modelData
-    property real normalWidth: 576
-    property real normalHeight: Core.Colors.barHeight + 3
+    property real normalWidth: Core.MenuStyle.bar.collapsedWidthMax * Core.MenuStyle.bar.collapsedWidthRatio
+    property real normalHeight: Core.Colors.barHeight + Core.MenuStyle.bar.heightExtra
     property var enabledModes: ["launcher", "clipboard", "bluetooth", "wifi", "wallpaper"]
     readonly property bool onThisScreen: Core.AppState.morphScreenName === (modelData ? modelData.name : "")
     readonly property bool expanded: enabledModes.indexOf(Core.AppState.barMorph) >= 0
@@ -24,11 +24,11 @@ Item {
         if (!expanded)
             hoverSurfaceEntered = false
     }
-    readonly property var expandedSize: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : 1920)
+    readonly property var expandedSize: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : Core.MenuStyle.layout.defaultScreenWidth)
     readonly property real expandedWidth: expandedSize.w
     readonly property real expandedHeight: expandedSize.h + normalHeight
     readonly property real visualRadius: expanded
-        ? Math.min(height / 2, 20)
+        ? Math.min(height / 2, Core.MenuStyle.bar.expandedRadiusCap)
         : normalHeight / 2
 
     width: expanded ? expandedWidth : normalWidth
@@ -68,12 +68,12 @@ Item {
 
     function targetSize(name, screenWidth) {
         switch (name) {
-            case "wallpaper":   return { w: Math.min(screenWidth * 0.5, 720), h: 80 };
-            case "launcher":    return { w: Core.MenuStyle.expandedMenuWidth, h: 380 };
-            case "clipboard":   return { w: 560, h: 380 };
-            case "wifi":        return { w: 480, h: 300 };
-            case "bluetooth":   return { w: 480, h: 300 };
-            default:            return { w: 280, h: 90 };
+            case "wallpaper":   return { w: Math.min(screenWidth * Core.MenuStyle.menu.wallpaperWidthRatio, Core.MenuStyle.menu.wallpaperMaxWidth), h: Core.MenuStyle.menu.wallpaperHeight };
+            case "launcher":    return { w: Core.MenuStyle.menu.expandedWidth, h: Core.MenuStyle.menu.launcherHeight };
+            case "clipboard":   return { w: Core.MenuStyle.menu.clipboardWidth, h: Core.MenuStyle.menu.clipboardHeight };
+            case "wifi":        return { w: Core.MenuStyle.menu.wifiWidth, h: Core.MenuStyle.menu.wifiHeight };
+            case "bluetooth":   return { w: Core.MenuStyle.menu.bluetoothWidth, h: Core.MenuStyle.menu.bluetoothHeight };
+            default:            return { w: Core.MenuStyle.menu.compactWidth, h: Core.MenuStyle.menu.compactHeight };
         }
     }
 
@@ -120,8 +120,8 @@ Item {
             signal morphTriggered(string name)
             onMorphTriggered: root.openMode(name, root.modelData)
 
-            readonly property real screenWidth: modelData ? modelData.width : 1920
-            readonly property real screenHeight: modelData ? modelData.height : 1080
+            readonly property real screenWidth: modelData ? modelData.width : Core.MenuStyle.layout.defaultScreenWidth
+            readonly property real screenHeight: modelData ? modelData.height : Core.MenuStyle.layout.defaultScreenHeight
 
             function triggerMorph(name) {
                 const screenName = modelData ? modelData.name : "";
@@ -144,8 +144,8 @@ Item {
             Rectangle {
                 id: barBg
                 anchors.fill: parent
-                anchors.topMargin: 2
-                anchors.bottomMargin: 1
+                                anchors.topMargin: Core.MenuStyle.bar.surfaceTopInset
+                                anchors.bottomMargin: Core.MenuStyle.bar.surfaceBottomInset
                 opacity: Core.AppState.barTemporarilyHidden ? 0 : 1
                 radius: height / 2
                 color: "transparent"
@@ -154,8 +154,8 @@ Item {
                 RowLayout {
                     id: barRow
                     anchors.fill: parent
-                    anchors.leftMargin: 18
-                    anchors.rightMargin: 18
+                                    anchors.leftMargin: Core.MenuStyle.bar.contentSidePadding
+                                    anchors.rightMargin: Core.MenuStyle.bar.contentSidePadding
                     spacing: 0
 
                     Item {
@@ -191,7 +191,7 @@ Item {
                                 previousIndex = activeIndex;
                                 blobX = activeIndex * unit;
                             }
-                            Rectangle { x: workspaces.blobX; width: workspaces.cellWidth; height: Local.Colors.barHeight - 17; radius: height / 2; color: Qt.rgba(1, 1, 1, 0.92) }
+                            Rectangle { x: workspaces.blobX; width: workspaces.cellWidth; height: Local.Colors.barHeight - 17; radius: height / 2; color: Core.MenuStyle.toggleRule.offSurface }
                             Row {
                                 spacing: workspaces.cellSpacing
                                 Repeater {
@@ -202,7 +202,7 @@ Item {
                                         readonly property int workspaceNumber: modelData.id
                                         readonly property bool isActive: index === workspaces.activeIndex
                                         readonly property bool isOccupied: modelData.occupied
-                                        Text { anchors.centerIn: parent; text: workspaceNumber; font.family: Local.Colors.fontFamily; font.pixelSize: 12; font.weight: isActive ? Font.Bold : Local.Colors.textWeight; color: isActive ? "#101018" : Local.Colors.foreground; opacity: isActive ? 1.0 : (isOccupied ? 0.85 : 0.35) }
+                                        Text { anchors.centerIn: parent; text: workspaceNumber; font.family: Local.Colors.fontFamily; font.pixelSize: 12; font.weight: isActive ? Font.Bold : Local.Colors.bodyWeight; color: Local.Colors.icon; opacity: isActive ? 1.0 : (isOccupied ? 0.85 : 0.35) }
                                         MouseArea { anchors.fill: parent; onClicked: Hyprland.dispatch("workspace " + workspaceNumber) }
                                     }
                                 }
@@ -219,7 +219,7 @@ Item {
                             color: Local.Colors.foreground
                             font.family: Local.Colors.fontFamily
                             font.pixelSize: 13
-                            font.weight: Local.Colors.textWeight
+                            font.weight: Local.Colors.labelWeight
                             property string currentTime: Qt.formatDateTime(new Date(), "h:mm AP")
                             text: currentTime
                             Timer { interval: 1000 * 15; running: true; repeat: true; onTriggered: clockCenter.currentTime = Qt.formatDateTime(new Date(), "h:mm AP") }
@@ -255,7 +255,7 @@ Item {
                                             easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastEffectsCurve
                                         }
                                     }
-                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: "Symbols Nerd Font"; font.pixelSize: 13; color: Local.Colors.foreground }
+                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: Local.Colors.iconFontFamily; font.pixelSize: 13; color: Local.Colors.icon }
                                     MouseArea {
                                         id: barIconMouse
                                         anchors.fill: parent
@@ -269,7 +269,7 @@ Item {
                             }
                         }
                     }
-                    property real sideWidth: 220
+                    property real sideWidth: Core.MenuStyle.bar.sideClusterWidth
                 }
             }
         }
@@ -349,7 +349,7 @@ Item {
                                 color: Core.Colors.foreground
                                     font.family: Core.Colors.fontFamily
                                     font.pixelSize: 13
-                                    font.weight: Core.Colors.textWeight
+                                    font.weight: Core.Colors.bodyWeight
                                 clip: true
                                 onTextChanged: laRoot.query = text
                                 Component.onCompleted: forceActiveFocus()
@@ -395,8 +395,7 @@ Item {
                                 height: 34
                                 radius: height / 2
                                 color: index === laRoot.selIndex
-                                       ? Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
-                                                 Core.Colors.accent.b, 0.30)
+                                       ? Core.Colors.accentSoftSurface
                                        : "transparent"
                                 Row {
                                     anchors.verticalCenter: parent.verticalCenter
@@ -443,7 +442,7 @@ Item {
                                         color: Core.Colors.foreground
                                         font.family: Core.Colors.fontFamily
                                         font.pixelSize: 13
-                                        font.weight: Core.Colors.textWeight
+                                        font.weight: Core.Colors.bodyWeight
                                     }
                                 }
 
@@ -515,7 +514,7 @@ Item {
                             color: Core.Colors.foreground
                             font.family: Core.Colors.fontFamily
                             font.pixelSize: 12
-                            font.weight: Core.Colors.textWeight
+                            font.weight: Core.Colors.bodyWeight
                         }
 
                         ListView {
@@ -533,8 +532,7 @@ Item {
                                 height: 30
                                 radius: height / 2
                                 color: chMouse.containsMouse || index === chRoot.selIndex
-                                       ? Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
-                                                 Core.Colors.accent.b, 0.25)
+                                       ? Core.Colors.accentSoftSurface
                                        : Core.MenuStyle.subtleSurfaceColor
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
@@ -545,7 +543,7 @@ Item {
                                     color: Core.Colors.foreground
                                     font.family: Core.Colors.fontFamily
                                     font.pixelSize: 11
-                                    font.weight: Core.Colors.textWeight
+                                    font.weight: Core.Colors.bodyWeight
                                 }
 
                                 MouseArea {
@@ -632,7 +630,7 @@ Item {
                         color: Core.Colors.foreground
                         font.family: Core.Colors.fontFamily
                         font.pixelSize: 12
-                        font.weight: Core.Colors.textWeight
+                        font.weight: Core.Colors.bodyWeight
                     }
 
                     ListView {
@@ -708,7 +706,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "\uf013"
-                            font.family: "Symbols Nerd Font"
+                        font.family: Core.Colors.iconFontFamily
                             font.pixelSize: 18
                             color: Core.Colors.muted
                         }
@@ -717,7 +715,7 @@ Item {
                             text: "under construction"
                             font.family: Core.Colors.fontFamily
                             font.pixelSize: 11
-                            font.weight: Core.Colors.textWeight
+                        font.weight: Core.Colors.bodyWeight
                             color: Core.Colors.muted
                         }
                     }
@@ -731,13 +729,13 @@ Item {
             Core.AppState.closeMorph();
             return;
         }
-        const width = Math.min(880, (screen ? screen.width : 1920) * 0.300);
+        const width = Math.min(Core.MenuStyle.bar.collapsedWidthMax, (screen ? screen.width : Core.MenuStyle.layout.defaultScreenWidth) * Core.MenuStyle.bar.collapsedWidthRatio);
         Core.AppState.openMorph(name,
-            ((screen ? screen.width : 1920) - width) / 2,
+            ((screen ? screen.width : Core.MenuStyle.layout.defaultScreenWidth) - width) / 2,
             0,
             width,
             root.normalHeight,
             screenName,
-            screen ? screen.height : 1080);
+            screen ? screen.height : Core.MenuStyle.layout.defaultScreenHeight);
     }
 }

@@ -8,17 +8,18 @@ import "../core" as Core
 Item {
         id: window
         required property var modelData
+        property real attachedTop: 0
         readonly property bool historyOpen: Core.AppState.notificationsOpen
-        readonly property int maxPopups: 3
+        readonly property int maxPopups: Core.MenuStyle.notification.maxVisible
         // The outer surface includes the shared padding; this keeps the
         // actual card width compact and stable at the screen edge.
         // Match the bar's collapsed footprint while remaining responsive.
-        readonly property int panelWidth: Math.min(350, modelData.width - 32)
+        readonly property int panelWidth: Math.min(Core.MenuStyle.notification.panelWidth, modelData.width - Core.MenuStyle.notification.screenPadding * 2)
         readonly property int panelPadding: Core.MenuStyle.sharedSpacing.paddingLarge
-        readonly property int maxPanelHeight: Math.min(520, Math.max(180, modelData.height - 32))
+        readonly property int maxPanelHeight: Math.min(Core.MenuStyle.notification.maxPanelHeight, Math.max(Core.MenuStyle.notification.minPanelHeight, modelData.height - Core.MenuStyle.notification.screenPadding * 2))
         readonly property var visibleNotifications: historyOpen
             ? Core.AppState.notifications.filter(item => !item.closed)
-            : Core.AppState.notifications.filter(item => item.popup && !item.closed).slice(0, maxPopups)
+            : Core.AppState.popupItems()
         readonly property bool hasNotifications: visibleNotifications.length > 0
         // Remove the surface from the global input mask while fully closed.
         property Item inputItem: (historyOpen || hasNotifications) ? surface : null
@@ -31,7 +32,7 @@ Item {
         visible: true
 
         Timer {
-            interval: 5000
+            interval: Core.MenuStyle.notification.clockRefreshInterval
             repeat: true
             running: true
             onTriggered: window.clock = Date.now()
@@ -58,8 +59,8 @@ Item {
             id: surface
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.topMargin: 16
-            anchors.rightMargin: 16
+            anchors.topMargin: window.attachedTop
+            anchors.rightMargin: Core.MenuStyle.notification.edgeMargin
             width: window.panelWidth
             height: window.popupHeight
             // Layer 2/3 are created by each delegate below. The same MenuPanel
@@ -68,7 +69,7 @@ Item {
             outlineColor: Core.MenuStyle.globalBorderColor
             outlineWidth: Core.MenuStyle.sharedRadius.border
             surfaceOpacity: (historyOpen || hasNotifications) ? 1 : 0
-            transform: Translate { y: (historyOpen || hasNotifications) ? 0 : -18 }
+            transform: Translate { y: (historyOpen || hasNotifications) ? 0 : Core.MenuStyle.popup.entryOffset }
 
             Behavior on height {
                 NumberAnimation {
@@ -106,24 +107,24 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: "Notifications"
-                        color: Core.Colors.foreground
+                        color: Core.Colors.onSurface
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 15
-                        font.weight: Core.Colors.textWeight
+                        font.pixelSize: Core.MenuStyle.notification.headerFontSize
+                        font.weight: Core.Colors.titleWeight
                     }
 
                     Rectangle {
-                        implicitWidth: 30
-                        implicitHeight: 30
+                        implicitWidth: Core.MenuStyle.notification.clearButtonSize
+                        implicitHeight: Core.MenuStyle.notification.clearButtonSize
                         radius: height / 2
                         color: clearMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : "transparent"
 
                         Text {
                             anchors.centerIn: parent
                             text: "\uf00d"
-                            color: Core.Colors.foreground
-                            font.family: "Symbols Nerd Font"
-                            font.pixelSize: 13
+                            color: Core.Colors.icon
+                            font.family: Core.Colors.iconFontFamily
+                            font.pixelSize: Core.MenuStyle.notification.clearFontSize
                         }
 
                         MouseArea {
@@ -188,7 +189,9 @@ Item {
                             NumberAnimation {
                                 target: card
                                 property: "x"
-                                to: card.x >= 0 ? wrapper.width * 2 : -wrapper.width * 2
+                                to: card.x >= 0
+                                    ? wrapper.width * Core.MenuStyle.popup.removalDistance
+                                    : -wrapper.width * Core.MenuStyle.popup.removalDistance
                                 duration: Core.MenuStyle.normalDuration
                                 easing.type: Core.MenuStyle.bezierSplineType
                                 easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve
@@ -205,7 +208,7 @@ Item {
                             cutBottomRight: true
                             cutAmount: Core.MenuStyle.radius
                             fillColor: wrapper.modelData.urgency === 2
-                                ? Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.28)
+                                ? Core.Colors.accentSoftSurface
                                 : Core.MenuStyle.globalSurfaceColor
                             strokeWidth: Core.MenuStyle.sharedRadius.border
                             strokeColor: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalBorderColor
@@ -230,7 +233,7 @@ Item {
 
                             Timer {
                                 id: expiry
-                                interval: 3000
+                                interval: Core.MenuStyle.notification.popupDuration
                                 running: !window.historyOpen && wrapper.modelData.popup
                                 onTriggered: Core.AppState.expireNotification(wrapper.modelData.id)
                             }
@@ -249,8 +252,8 @@ Item {
                                     spacing: Core.MenuStyle.sharedSpacing.medium
 
                                     Item {
-                                        implicitWidth: 38
-                                        implicitHeight: 38
+                                        implicitWidth: Core.MenuStyle.notification.iconSize
+                                        implicitHeight: Core.MenuStyle.notification.iconSize
 
                                         Rectangle {
                                             anchors.fill: parent
@@ -261,7 +264,7 @@ Item {
                                         Image {
                                             id: notificationImage
                                             anchors.fill: parent
-                                            anchors.margins: 5
+                                            anchors.margins: Core.MenuStyle.notification.iconInset
                                             source: wrapper.modelData.image || (wrapper.modelData.appIcon ? Quickshell.iconPath(wrapper.modelData.appIcon) : "")
                                             fillMode: Image.PreserveAspectCrop
                                             asynchronous: true
@@ -271,23 +274,23 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "\uf0f3"
-                                            color: Core.Colors.foreground
-                                            font.family: "Symbols Nerd Font"
-                                            font.pixelSize: 16
+                                            color: Core.Colors.icon
+                                            font.family: Core.Colors.iconFontFamily
+                                            font.pixelSize: Core.MenuStyle.notification.fallbackIconFontSize
                                             visible: !notificationImage.visible
                                         }
                                     }
 
                                     ColumnLayout {
                                         Layout.fillWidth: true
-                                        spacing: 0
+                                        spacing: Core.MenuStyle.notification.compactRowSpacing
 
                                         Text {
                                             Layout.fillWidth: true
                                             text: wrapper.modelData.appName || "Notification"
-                                            color: Core.Colors.muted
+                                            color: Core.Colors.onSurfaceVariant
                                             font.family: Core.Colors.fontFamily
-                                            font.pixelSize: 10
+                                            font.pixelSize: Core.MenuStyle.notification.metadataFontSize
                                             elide: Text.ElideRight
                                             visible: !wrapper.popupMode
                                         }
@@ -297,19 +300,19 @@ Item {
                                             text: wrapper.popupMode
                                                 ? wrapper.modelData.summary + "  ·  " + window.timeLabel(wrapper.modelData.createdAt)
                                                 : wrapper.modelData.summary
-                                            color: Core.Colors.foreground
+                                            color: Core.Colors.onSurface
                                             font.family: Core.Colors.fontFamily
-                                            font.pixelSize: 12
-                                            font.weight: Core.Colors.textWeight
+                                            font.pixelSize: Core.MenuStyle.notification.summaryFontSize
+                                            font.weight: Core.Colors.labelWeight
                                             elide: Text.ElideRight
                                         }
 
                                         Text {
                                             Layout.fillWidth: true
                                             text: window.timeLabel(wrapper.modelData.createdAt)
-                                            color: Core.Colors.muted
+                                            color: Core.Colors.onSurfaceVariant
                                             font.family: Core.Colors.fontFamily
-                                            font.pixelSize: 10
+                                            font.pixelSize: Core.MenuStyle.notification.metadataFontSize
                                             visible: !wrapper.popupMode
                                         }
                                     }
@@ -320,14 +323,14 @@ Item {
                                         id: chevron
                                         Layout.alignment: Qt.AlignVCenter
                                         text: card.expanded ? "\uf077" : "\uf078"
-                                        color: Core.Colors.foreground
-                                        font.family: "Symbols Nerd Font"
-                                        font.pixelSize: 12
+                                        color: Core.Colors.icon
+                                        font.family: Core.Colors.iconFontFamily
+                                        font.pixelSize: Core.MenuStyle.notification.chevronFontSize
 
                                         MouseArea {
                                             id: expandMouse
                                             anchors.fill: parent
-                                            anchors.margins: -8
+                                            anchors.margins: Core.MenuStyle.popup.chevronHitSlop
                                             onClicked: if (wrapper.popupMode) card.expanded = !card.expanded
                                         }
                                     }
@@ -335,10 +338,10 @@ Item {
                                     Core.SharpShape {
                                         id: dismissButton
                                         Layout.alignment: Qt.AlignVCenter
-                                        Layout.preferredWidth: 24
-                                        Layout.preferredHeight: 24
-                                        width: 24
-                                        height: 24
+                                        Layout.preferredWidth: Core.MenuStyle.notification.dismissSize
+                                        Layout.preferredHeight: Core.MenuStyle.notification.dismissSize
+                                        width: Core.MenuStyle.notification.dismissSize
+                                        height: Core.MenuStyle.notification.dismissSize
                                         cutBottomLeft: true
                                         cutBottomRight: true
                                         cutAmount: Core.MenuStyle.radius
@@ -350,9 +353,9 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "\uf00d"
-                                            color: Core.Colors.foreground
-                                            font.family: "Symbols Nerd Font"
-                                            font.pixelSize: 11
+                                            color: Core.Colors.icon
+                                            font.family: Core.Colors.iconFontFamily
+                                            font.pixelSize: Core.MenuStyle.notification.dismissFontSize
                                         }
 
                                         MouseArea {
@@ -374,11 +377,11 @@ Item {
                                     Layout.fillWidth: true
                                     textFormat: /[<*_`#\[\]]/.test(wrapper.modelData.body || "") ? Text.MarkdownText : Text.PlainText
                                     text: wrapper.modelData.body
-                                    color: Core.Colors.foreground
+                                    color: Core.Colors.onSurface
                                     font.family: Core.Colors.fontFamily
-                                    font.pixelSize: 11
+                                    font.pixelSize: Core.MenuStyle.notification.bodyFontSize
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                    maximumLineCount: 12
+                                    maximumLineCount: Core.MenuStyle.notification.bodyMaxLines
                                     elide: Text.ElideRight
                                     visible: card.expanded && text.length > 0
                                 }
@@ -388,10 +391,10 @@ Item {
                                     Layout.fillWidth: true
                                     textFormat: /[<*_`#\[\]]/.test(wrapper.modelData.body || "") ? Text.MarkdownText : Text.PlainText
                                     text: wrapper.modelData.body
-                                    color: Core.Colors.muted
+                                    color: Core.Colors.onSurfaceVariant
                                     font.family: Core.Colors.fontFamily
-                                    font.pixelSize: 11
-                                    maximumLineCount: 1
+                                    font.pixelSize: Core.MenuStyle.notification.bodyFontSize
+                                    maximumLineCount: Core.MenuStyle.notification.previewMaxLines
                                     elide: Text.ElideRight
                                     visible: !card.expanded && text.length > 0
                                 }
@@ -406,16 +409,16 @@ Item {
                                         delegate: Rectangle {
                                             required property var modelData
                                             Layout.fillWidth: true
-                                            implicitHeight: 26
+                                            implicitHeight: Core.MenuStyle.notification.actionHeight
                                             radius: Core.MenuStyle.sharedRadius.card
                                             color: actionMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : Core.MenuStyle.globalSurfaceColor
 
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: modelData.text
-                                                color: Core.Colors.foreground
+                                                color: Core.Colors.onSurface
                                                 font.family: Core.Colors.fontFamily
-                                                font.pixelSize: 10
+                                                font.pixelSize: Core.MenuStyle.notification.actionFontSize
                                                 elide: Text.ElideRight
                                             }
 
@@ -453,7 +456,7 @@ Item {
                                 onReleased: {
                                     if (!containsMouse)
                                         expiry.start()
-                                    if (Math.abs(card.x) >= card.width * 0.4)
+                                    if (Math.abs(card.x) >= card.width * Core.MenuStyle.popup.swipeThreshold)
                                         Core.AppState.hideNotificationPopup(wrapper.modelData.id)
                                     else
                                         card.x = 0
@@ -461,7 +464,7 @@ Item {
                                 onPositionChanged: event => {
                                     if (pressed && event.buttons & Qt.LeftButton) {
                                         const verticalDelta = event.y - startY
-                                        if (wrapper.popupMode && Math.abs(verticalDelta) > 16)
+                                        if (wrapper.popupMode && Math.abs(verticalDelta) > Core.MenuStyle.popup.expandThreshold)
                                             card.expanded = verticalDelta > 0
                                         card.x = Math.max(-card.width, Math.min(card.width, event.x - startX))
                                     }

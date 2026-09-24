@@ -10,15 +10,15 @@ Item {
     property Item inputItem: win
 
     // These dimensions and visual bindings mirror Dock.qml exactly.
-    readonly property int noteWidth: 300
-    readonly property int noteHeight: 60
-    readonly property int gap: 16
-    readonly property int margin: 20
+    readonly property int noteWidth: Core.MenuStyle.layout.todo.cardWidth
+    readonly property int noteHeight: Core.MenuStyle.layout.todo.cardHeight
+    readonly property int gap: Core.MenuStyle.layout.todo.gap
+    readonly property int margin: Core.MenuStyle.layout.todo.margin
     readonly property var visibleTodos: Core.AppState.todos
         .filter(item => !item.checked)
         .slice()
         .sort((a, b) => Number(a.id) - Number(b.id))
-        .slice(0, 6)
+        .slice(0, Core.MenuStyle.layout.todo.maxVisible)
     property var locallyNotified: ({})
 
     function todoKey(item) {
@@ -58,8 +58,8 @@ Item {
         id: win
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.topMargin: 92
-        anchors.rightMargin: 28
+        anchors.topMargin: Core.MenuStyle.layout.todo.topOffset
+        anchors.rightMargin: Core.MenuStyle.layout.todo.rightOffset
         width: root.margin * 2 + root.noteWidth * 2 + root.gap
         height: root.margin * 2 + root.noteHeight * 3 + root.gap * 2
         visible: Core.AppState.showDesktopWidgets && root.visibleTodos.length > 0
@@ -85,12 +85,11 @@ Item {
                         cutBottomLeft: true
                         cutBottomRight: true
                         cutAmount: Core.MenuStyle.radius
-                        fillColor: Qt.rgba(Core.Colors.background.r, Core.Colors.background.g,
-                                       Core.Colors.background.b, entry.hovered ? 0.72 : 0.42)
+                        fillColor: entry.hovered ? Core.Colors.widgetHover : Core.Colors.widgetBackground
                         strokeWidth: 1
                         strokeColor: entry.hovered
                             ? Core.Colors.accent
-                            : Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.6)
+                            : Core.Colors.separator
                         transform: Matrix4x4 {
                             matrix: Qt.matrix4x4(1, 0.28, 0, -8,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
                         }
@@ -100,7 +99,7 @@ Item {
                         Rectangle {
                             anchors { top: parent.top; left: parent.left; right: parent.right }
                             height: 1
-                            color: "#55ffffff"
+                            color: Core.Colors.separatorOverlay
                         }
                         Rectangle {
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -117,27 +116,27 @@ Item {
                     Row {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: 24
+                        anchors.leftMargin: Core.MenuStyle.layout.todo.contentLeftPadding
                         anchors.right: check.left
-                        anchors.rightMargin: 14
-                        spacing: 13
+                        anchors.rightMargin: Core.MenuStyle.layout.todo.contentRightPadding
+                        spacing: Core.MenuStyle.layout.todo.rowSpacing
 
                         Column {
                             anchors.verticalCenter: parent.verticalCenter
                             Text {
                                 text: modelData.text
                                 color: entry.hovered ? Core.Colors.accent : Core.Colors.foreground
-                                font.pixelSize: 15
+                                font.pixelSize: Core.MenuStyle.layout.todo.titleFontSize
                                 font.bold: entry.hovered
                                 font.family: Core.Colors.fontFamily
                                 elide: Text.ElideRight
-                                width: 220
+                                width: Core.MenuStyle.layout.todo.titleWidth
                                 Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
                             }
                             Text {
                                 text: "slot " + modelData.id
                                 color: Core.Colors.muted
-                                font.pixelSize: 10
+                                font.pixelSize: Core.MenuStyle.layout.todo.metadataFontSize
                                 font.family: Core.Colors.fontFamily
                             }
                         }
@@ -146,13 +145,12 @@ Item {
                     Rectangle {
                         id: check
                         z: 1
-                        width: 22
-                        height: 22
+                        width: Core.MenuStyle.layout.todo.completeButtonSize
+                        height: Core.MenuStyle.layout.todo.completeButtonSize
                         anchors.right: parent.right
                         anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        color: Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g,
-                                       Core.Colors.accent.b, entry.hovered ? 0.28 : 0.14)
+                            color: entry.hovered ? Core.Colors.accentSoftSurface : Core.Colors.accentFaintSurface
                         border.width: 1
                         border.color: Core.Colors.accent
                         Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
@@ -161,7 +159,7 @@ Item {
                             anchors.centerIn: parent
                             text: "✓"
                             color: Core.Colors.accent
-                            font.pixelSize: 16
+                            font.pixelSize: Core.MenuStyle.layout.todo.completeFontSize
                         }
 
                         MouseArea {
@@ -182,7 +180,7 @@ Item {
     }
 
     Timer {
-        interval: 60000
+        interval: Core.MenuStyle.layout.todo.reminderInterval
         repeat: true
         running: true
         triggeredOnStart: true

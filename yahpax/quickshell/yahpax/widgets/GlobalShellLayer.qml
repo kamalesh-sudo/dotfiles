@@ -89,6 +89,7 @@ Variants {
         NotificationPopup {
             id: notifications
             modelData: root.modelData
+            attachedTop: bar.y + bar.inputItem.y + bar.inputItem.height
             anchors.fill: parent
         }
 
@@ -103,8 +104,8 @@ Variants {
     PanelWindow {
         screen: screenRoot.modelData
         anchors.top: true
-        implicitWidth: 1
-        implicitHeight: 1
+        implicitWidth: Core.MenuStyle.layout.exclusionExtent
+        implicitHeight: Core.MenuStyle.layout.exclusionExtent
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
@@ -115,8 +116,8 @@ Variants {
     PanelWindow {
         screen: screenRoot.modelData
         anchors.bottom: true
-        implicitWidth: 1
-        implicitHeight: 1
+        implicitWidth: Core.MenuStyle.layout.exclusionExtent
+        implicitHeight: Core.MenuStyle.layout.exclusionExtent
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
@@ -127,8 +128,8 @@ Variants {
     PanelWindow {
         screen: screenRoot.modelData
         anchors.left: true
-        implicitWidth: 1
-        implicitHeight: 1
+        implicitWidth: Core.MenuStyle.layout.exclusionExtent
+        implicitHeight: Core.MenuStyle.layout.exclusionExtent
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
@@ -139,8 +140,8 @@ Variants {
     PanelWindow {
         screen: screenRoot.modelData
         anchors.right: true
-        implicitWidth: 1
-        implicitHeight: 1
+        implicitWidth: Core.MenuStyle.layout.exclusionExtent
+        implicitHeight: Core.MenuStyle.layout.exclusionExtent
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}

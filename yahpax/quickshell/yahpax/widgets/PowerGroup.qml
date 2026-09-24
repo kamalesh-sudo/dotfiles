@@ -8,15 +8,15 @@ Item {
     required property var modelData
     property Item inputItem: inputRegion
 
-        readonly property int buttonWidth: 30
-        readonly property int buttonHeight: Core.Colors.barHeight - 10
+        readonly property int buttonWidth: Core.MenuStyle.bar.actionWidth
+        readonly property int buttonHeight: Core.Colors.barHeight - Core.MenuStyle.bar.actionHeightOffset
         readonly property int buttonSpacing: Core.MenuStyle.sharedSpacing.small
         readonly property int groupWidth: buttonWidth * 4 + buttonSpacing * 3
-        readonly property real barWidth: Math.min(880, modelData.width * 0.300)
+        readonly property real barWidth: Math.min(Core.MenuStyle.bar.collapsedWidthMax, modelData.width * Core.MenuStyle.bar.collapsedWidthRatio)
 
         anchors.top: parent.top
         anchors.left: parent.left
-        anchors.topMargin: 10
+        anchors.topMargin: Core.MenuStyle.bar.actionHeightOffset
         // Anchor after the actual responsive bar width and its 18px cluster
         // inset, rather than against the screen's right edge.
         anchors.leftMargin: (modelData.width - barWidth) / 2 + barWidth + buttonSpacing
@@ -73,14 +73,17 @@ Item {
                     cutBottomLeft: true
                     cutBottomRight: true
                     cutAmount: Core.MenuStyle.radius
-                    fillColor: Core.Colors.accent
-                    strokeWidth: 0
+                    // Power actions use the same active surface as the bar's
+                    // Power toggle; only the glyph differs.
+                    fillColor: Core.MenuStyle.toggleRule.onSurface
+                    strokeColor: Core.Colors.border
+                    strokeWidth: Core.MenuStyle.sharedRadius.border
 
                     Text {
                         anchors.centerIn: parent
                         text: modelData.glyph
-                        color: Core.Colors.foreground
-                        font.family: "Symbols Nerd Font"
+                        color: Core.Colors.icon
+                        font.family: Core.Colors.iconFontFamily
                         font.pixelSize: 13
                     }
 

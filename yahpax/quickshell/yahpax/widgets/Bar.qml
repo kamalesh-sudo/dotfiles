@@ -12,15 +12,15 @@ Item {
     property Item revealInput: revealZone
     property real shellJoinRadius: morph.visualRadius
 
-        readonly property real barHeight: Core.Colors.barHeight + 3
-        readonly property real fixedWidth: Math.max(Math.min(880, modelData.width * 0.300), 900)
-        readonly property real fixedHeight: barHeight + 380
+        readonly property real barHeight: Core.Colors.barHeight + Core.MenuStyle.bar.heightExtra
+        readonly property real fixedWidth: Math.max(Math.min(Core.MenuStyle.bar.hostMaxWidth, modelData.width * Core.MenuStyle.bar.collapsedWidthRatio), Core.MenuStyle.bar.hostMinWidth)
+        readonly property real fixedHeight: barHeight + Core.MenuStyle.bar.hostHeightExtra
         readonly property bool focusedFullscreen: ToplevelManager.activeToplevel?.fullscreen === true
         readonly property bool noWindows: ToplevelManager.activeToplevel === null
         readonly property bool revealTarget: !focusedFullscreen
             && (noWindows || revealZone.containsMouse || barHover.hovered || morph.expanded)
         property real revealProgress: revealTarget ? 1 : 0
-        readonly property bool contentVisible: revealProgress > 0.001
+        readonly property bool contentVisible: revealProgress > Core.MenuStyle.input.visibleThreshold
 
         // Match Caelestia's Dashboard edge reveal: FastSpatial, 350 ms,
         // with no separate hover delay.
@@ -33,7 +33,7 @@ Item {
         }
 
         anchors.top: parent.top
-        anchors.topMargin: 5
+        anchors.topMargin: Core.MenuStyle.layout.barTopOffset
         anchors.horizontalCenter: parent.horizontalCenter
         width: fixedWidth
         height: fixedHeight
@@ -43,10 +43,10 @@ Item {
         MouseArea {
             id: revealZone
             x: (window.fixedWidth - width) / 2
-            y: -5
-            width: window.fixedWidth * 0.50
-            height: 10
-            z: 100
+            y: Core.MenuStyle.bar.revealZoneOffset
+            width: window.fixedWidth * Core.MenuStyle.bar.revealZoneWidthRatio
+            height: Core.MenuStyle.bar.revealZoneHeight
+            z: Core.MenuStyle.input.revealZoneZ
             hoverEnabled: true
             acceptedButtons: Qt.NoButton
         }
@@ -60,7 +60,7 @@ Item {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             modelData: window.modelData
-            normalWidth: Math.min(880, window.modelData.width * 0.300)
+            normalWidth: Math.min(Core.MenuStyle.bar.collapsedWidthMax, window.modelData.width * Core.MenuStyle.bar.collapsedWidthRatio)
             normalHeight: window.barHeight
             visible: window.contentVisible
             opacity: window.revealProgress

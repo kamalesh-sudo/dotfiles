@@ -73,7 +73,7 @@ Item {
                 text: root.view === "default" ? "WIFI" : root.view.toUpperCase()
                 color: Core.Colors.foreground
                 font.family: Core.Colors.fontFamily
-                font.weight: Core.Colors.textWeight
+                font.weight: Core.Colors.titleWeight
             }
             Text {
                 visible: root.view !== "default"

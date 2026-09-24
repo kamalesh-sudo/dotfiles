@@ -25,7 +25,7 @@ ColumnLayout {
             color: Core.Colors.foreground
             font.family: Core.Colors.fontFamily
             font.pixelSize: 12
-            font.weight: Core.Colors.textWeight
+            font.weight: Core.Colors.titleWeight
         }
         Text {
             text: Local.BluetoothService.enabled ? "ON" : "OFF"

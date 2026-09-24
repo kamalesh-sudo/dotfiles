@@ -10,7 +10,7 @@ Core.SharpShape {
     property color outlineColor: Core.MenuStyle.globalBorderColor
     property real outlineWidth: Core.MenuStyle.sharedRadius.border
     property bool cutLowerCorners: true
-    property real surfaceOpacity: 1
+    property real surfaceOpacity: Core.MenuStyle.sharedOpacity.idle
 
     cutBottomLeft: root.cutLowerCorners
     cutBottomRight: root.cutLowerCorners

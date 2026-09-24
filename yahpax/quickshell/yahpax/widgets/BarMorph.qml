@@ -198,7 +198,7 @@ Item {
                                 radius: height / 2
                                 // Keep the active workspace marker exactly
                                 // matched to its own dynamic border color.
-                                color: Core.MenuStyle.hoverRule.surface
+                                color: Core.MenuStyle.dockButtonRule.activeSurface
                                 border.width: Core.MenuStyle.sharedRadius.border
                                 border.color: Core.Colors.accent
                             }
@@ -256,10 +256,12 @@ Item {
                                     border.width: Core.MenuStyle.sharedRadius.border
                                     border.color: Core.Colors.accent
                                     color: barIconMouse.pressed
-                                           ? Core.MenuStyle.toggleRule.pressedSurface
-                                           : (Core.AppState.barMorph === modelData.morph && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : ""))
-                                             ? Core.MenuStyle.hoverRule.surface
-                                             : Core.MenuStyle.hoverRule.surface
+                                           ? Core.MenuStyle.dockButtonRule.pressedSurface
+                                           : (barIconMouse.containsMouse
+                                              || (Core.AppState.barMorph === modelData.morph
+                                                  && Core.AppState.morphScreenName === (barContent.modelData ? barContent.modelData.name : "")))
+                                             ? Core.MenuStyle.dockButtonRule.activeSurface
+                                             : Core.MenuStyle.dockButtonRule.idleSurface
                                     Behavior on color {
                                         ColorAnimation {
                                             duration: Core.MenuStyle.hoverRule.duration
@@ -673,7 +675,9 @@ Item {
                                         id: thumb
                                         anchors.fill: parent
                                         anchors.margins: 2
-                                        source: "file://" + modelData.thumb
+                                        // Keep the absolute thumbnail path
+                                        // intact, including nested directories.
+                                        source: modelData.thumb
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: false
                                         cache: true

@@ -2,7 +2,7 @@
 
 # wallpaper-list-thumbnails.fish
 #
-# Lists wallpapers in ~/Pictures/Wallpapers, printing per line:
+# Recursively lists wallpapers in ~/Pictures/Wallpapers, printing per line:
 #   <original path>\t<cached thumbnail path>
 #
 # Images: resized copy via magick/convert.
@@ -30,10 +30,12 @@ if type -q ffmpeg
   set HAVE_FFMPEG 1
 end
 
-find "$WALL_DIR" -maxdepth 1 -type f \
+find "$WALL_DIR" -type f \
   \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \
-     -o -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' -o -iname '*.gif' \) \
-  | sort | while read -l f
+     -o -iname '*.avif' -o -iname '*.bmp' -o -iname '*.tif' -o -iname '*.tiff' \
+     -o -iname '*.jxl' -o -iname '*.svg' -o -iname '*.mp4' -o -iname '*.mkv' \
+     -o -iname '*.webm' -o -iname '*.mov' -o -iname '*.gif' \) \
+  | sort -u | while read -l f
 
     set -l hash (printf '%s' "$f" | md5sum | cut -d' ' -f1)
     set -l thumb "$THUMB_DIR/$hash.png"

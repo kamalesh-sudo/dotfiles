@@ -524,6 +524,14 @@ QtObject {
         // Inactive-state transition easing curve.
         readonly property var easing: root.defaultEffectsCurve
     }
+    readonly property QtObject dockButtonRule: QtObject {
+        // Wallpaper-derived fill used by dock buttons at rest.
+        readonly property color idleSurface: Colors.accentFaintSurface
+        // Wallpaper-derived fill used by dock buttons when selected or hovered.
+        readonly property color activeSurface: Colors.accentSoftSurface
+        // Wallpaper-derived fill used while one of these buttons is pressed.
+        readonly property color pressedSurface: Colors.accentStrongSurface
+    }
     readonly property QtObject toggleRule: QtObject {
         // Surface used when a toggle is off.
         readonly property color offSurface: root.subtleSurfaceColor

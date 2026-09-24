@@ -125,7 +125,11 @@ Item {
                         radius: height / 2
                         border.width: Core.MenuStyle.sharedRadius.border
                         border.color: Core.Colors.accent
-                        color: clearMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : "transparent"
+                        color: clearMouse.pressed
+                               ? Core.MenuStyle.dockButtonRule.pressedSurface
+                               : clearMouse.containsMouse
+                               ? Core.MenuStyle.dockButtonRule.activeSurface
+                               : Core.MenuStyle.dockButtonRule.idleSurface
 
                         Text {
                             anchors.centerIn: parent
@@ -345,7 +349,11 @@ Item {
                                         cutAmount: Core.MenuStyle.radius
                                         strokeColor: Core.Colors.accent
                                         strokeWidth: Core.MenuStyle.sharedRadius.border
-                                        fillColor: Core.MenuStyle.hoverRule.surface
+                                        fillColor: dismissMouse.pressed
+                                                  ? Core.MenuStyle.dockButtonRule.pressedSurface
+                                                  : dismissMouse.containsMouse
+                                                  ? Core.MenuStyle.dockButtonRule.activeSurface
+                                                  : Core.MenuStyle.dockButtonRule.idleSurface
 
                                         Text {
                                             anchors.centerIn: parent

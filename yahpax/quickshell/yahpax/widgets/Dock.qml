@@ -56,7 +56,11 @@ Item {
                         anchors.fill: parent
                         // Keep dock entries on the same wallpaper-derived
                         // accent family instead of the near-black panel fill.
-                        color: entry.hovered ? Local.Colors.accentSoftSurface : Local.Colors.accentFaintSurface
+                        color: mouse.pressed
+                            ? Core.MenuStyle.dockButtonRule.pressedSurface
+                            : entry.hovered
+                            ? Core.MenuStyle.dockButtonRule.activeSurface
+                            : Core.MenuStyle.dockButtonRule.idleSurface
                         border.width: Core.MenuStyle.dock.entryBorderWidth
                         border.color: entry.hovered
                             ? Local.Colors.accent
@@ -94,7 +98,11 @@ Item {
                         Rectangle {
                         width: Core.MenuStyle.dock.iconWidth; height: Core.MenuStyle.dock.iconHeight
                             anchors.verticalCenter: parent.verticalCenter
-                            color: entry.hovered ? Local.Colors.accentSoftSurface : Local.Colors.accentFaintSurface
+                            color: mouse.pressed
+                                ? Core.MenuStyle.dockButtonRule.pressedSurface
+                                : entry.hovered
+                                ? Core.MenuStyle.dockButtonRule.activeSurface
+                                : Core.MenuStyle.dockButtonRule.idleSurface
                             border.width: Core.MenuStyle.dock.entryBorderWidth
                             border.color: Local.Colors.accent
                             Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }

@@ -69,7 +69,7 @@ Item {
     function targetSize(name, screenWidth) {
         switch (name) {
             case "wallpaper":   return { w: Math.min(screenWidth * 0.5, 720), h: 80 };
-            case "launcher":    return { w: 900, h: 380 };
+            case "launcher":    return { w: Core.MenuStyle.expandedMenuWidth, h: 380 };
             case "clipboard":   return { w: 560, h: 380 };
             case "wifi":        return { w: 480, h: 300 };
             case "bluetooth":   return { w: 480, h: 300 };
@@ -77,19 +77,17 @@ Item {
         }
     }
 
-    Rectangle {
+    Core.SharpShape {
         id: panel
         anchors.fill: parent
-        radius: root.visualRadius
-        clip: true
-        antialiasing: true
-        layer.enabled: true
-        layer.smooth: true
         // The global screen Shape owns the continuous outer surface and
         // border. Keeping this item transparent preserves clipping/input for
         // the existing BarMorph content without drawing a second outline.
-        color: "transparent"
-        border.width: 0
+        cutBottomLeft: true
+        cutBottomRight: true
+        cutAmount: Core.MenuStyle.radius
+        fillColor: "transparent"
+        strokeWidth: 0
         MouseArea {
             anchors { left: parent.left; right: parent.right; top: barContent.bottom; bottom: parent.bottom }
             enabled: root.expanded

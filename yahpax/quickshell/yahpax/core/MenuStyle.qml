@@ -18,6 +18,7 @@ QtObject {
     readonly property int collapseDuration: expressiveDefaultSpatialDuration
     readonly property int popupDuration: normalDuration
     readonly property int stateDuration: expressiveDefaultEffectsDuration
+    readonly property int expandedMenuWidth: 900
 
     readonly property int normalDuration: 400
     readonly property int expressiveFastSpatialDuration: 350

@@ -66,13 +66,15 @@ Item {
                     { glyph: "\uf04c", action: "sleep" }
                 ]
 
-                delegate: Rectangle {
+                delegate: Core.SharpShape {
                     required property var modelData
                     width: window.buttonWidth
                     height: window.buttonHeight
-                    radius: height / 2
-                    color: Core.Colors.accent
-                    border.width: 0
+                    cutBottomLeft: true
+                    cutBottomRight: true
+                    cutAmount: Core.MenuStyle.radius
+                    fillColor: Core.Colors.accent
+                    strokeWidth: 0
 
                     Text {
                         anchors.centerIn: parent

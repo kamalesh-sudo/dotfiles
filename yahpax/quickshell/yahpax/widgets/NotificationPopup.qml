@@ -8,19 +8,20 @@ import "../core" as Core
 Item {
         id: window
         required property var modelData
-        property Item inputItem: surface
-
         readonly property bool historyOpen: Core.AppState.notificationsOpen
         readonly property int maxPopups: 3
         // The outer surface includes the shared padding; this keeps the
         // actual card width compact and stable at the screen edge.
-        readonly property int panelWidth: 448
+        // Match the bar's collapsed footprint while remaining responsive.
+        readonly property int panelWidth: Math.min(350, modelData.width - 32)
         readonly property int panelPadding: Core.MenuStyle.sharedSpacing.paddingLarge
-        readonly property int maxPanelHeight: Math.max(180, modelData.height - 32)
+        readonly property int maxPanelHeight: Math.min(520, Math.max(180, modelData.height - 32))
         readonly property var visibleNotifications: historyOpen
             ? Core.AppState.notifications.filter(item => !item.closed)
             : Core.AppState.notifications.filter(item => item.popup && !item.closed).slice(0, maxPopups)
         readonly property bool hasNotifications: visibleNotifications.length > 0
+        // Remove the surface from the global input mask while fully closed.
+        property Item inputItem: (historyOpen || hasNotifications) ? surface : null
         property real clock: Date.now()
 
         anchors.fill: parent
@@ -53,7 +54,7 @@ Item {
 
         // Layer 1: the full-screen, screen-attached Yahpax surface.  The
         // compositor blur and input region belong to this layer only.
-        Rectangle {
+        MenuPanel {
             id: surface
             anchors.top: parent.top
             anchors.right: parent.right
@@ -61,12 +62,12 @@ Item {
             anchors.rightMargin: 16
             width: window.panelWidth
             height: window.popupHeight
-            // Layer 2/3 are created by each delegate below. The host remains
-            // transparent so Yahpax's existing namespace blur is preserved.
-            radius: 0
-            color: "transparent"
-            border.width: 0
-            opacity: (historyOpen || hasNotifications) ? 1 : 0
+            // Layer 2/3 are created by each delegate below. The same MenuPanel
+            // used by Bar's expanded surface owns the visible shell here.
+            surfaceColor: Core.MenuStyle.globalSurfaceColor
+            outlineColor: Core.MenuStyle.globalBorderColor
+            outlineWidth: Core.MenuStyle.sharedRadius.border
+            surfaceOpacity: (historyOpen || hasNotifications) ? 1 : 0
             transform: Translate { y: (historyOpen || hasNotifications) ? 0 : -18 }
 
             Behavior on height {
@@ -196,16 +197,18 @@ Item {
                         }
 
                         // Layer 2: one compact notification card.
-                        Rectangle {
+                        Core.SharpShape {
                             id: card
                             width: parent.width
                             implicitHeight: content.implicitHeight + Core.MenuStyle.sharedSpacing.paddingMedium * 2
-                            radius: Core.MenuStyle.sharedRadius.panel
-                            color: wrapper.modelData.urgency === 2
+                            cutBottomLeft: true
+                            cutBottomRight: true
+                            cutAmount: Core.MenuStyle.radius
+                            fillColor: wrapper.modelData.urgency === 2
                                 ? Qt.rgba(Core.Colors.accent.r, Core.Colors.accent.g, Core.Colors.accent.b, 0.28)
                                 : Core.MenuStyle.globalSurfaceColor
-                            border.width: Core.MenuStyle.sharedRadius.border
-                            border.color: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalBorderColor
+                            strokeWidth: Core.MenuStyle.sharedRadius.border
+                            strokeColor: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalBorderColor
                             property bool expanded: window.historyOpen
 
                             Component.onCompleted: x = 0
@@ -227,9 +230,8 @@ Item {
 
                             Timer {
                                 id: expiry
-                                readonly property int timeout: Number(wrapper.modelData.expireTimeout) > 0 ? Number(wrapper.modelData.expireTimeout) : 5000
-                                interval: timeout
-                                running: !window.historyOpen && wrapper.modelData.popup && !wrapper.modelData.resident && wrapper.modelData.urgency !== 2
+                                interval: 3000
+                                running: !window.historyOpen && wrapper.modelData.popup
                                 onTriggered: Core.AppState.expireNotification(wrapper.modelData.id)
                             }
 
@@ -327,6 +329,41 @@ Item {
                                             anchors.fill: parent
                                             anchors.margins: -8
                                             onClicked: if (wrapper.popupMode) card.expanded = !card.expanded
+                                        }
+                                    }
+
+                                    Core.SharpShape {
+                                        id: dismissButton
+                                        Layout.alignment: Qt.AlignVCenter
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        width: 24
+                                        height: 24
+                                        cutBottomLeft: true
+                                        cutBottomRight: true
+                                        cutAmount: Core.MenuStyle.radius
+                                        fillColor: dismissMouse.containsMouse
+                                            ? Core.MenuStyle.hoverRule.surface
+                                            : Core.MenuStyle.globalSurfaceColor
+                                        strokeWidth: 0
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "\uf00d"
+                                            color: Core.Colors.foreground
+                                            font.family: "Symbols Nerd Font"
+                                            font.pixelSize: 11
+                                        }
+
+                                        MouseArea {
+                                            id: dismissMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            acceptedButtons: Qt.LeftButton
+                                            onClicked: {
+                                                expiry.stop()
+                                                Core.AppState.hideNotificationPopup(wrapper.modelData.id)
+                                            }
                                         }
                                     }
                                 }

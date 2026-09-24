@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "../core" as Core
 
 Item {
 
@@ -33,6 +34,15 @@ Item {
     height:
         config.visualizerHeight +
         config.margin * 2
+
+    Core.SharpShape {
+        anchors.fill: parent
+        cutBottomLeft: true
+        cutBottomRight: true
+        cutAmount: Core.MenuStyle.radius
+        fillColor: "transparent"
+        strokeWidth: 0
+    }
 
 
     // ============================================================

@@ -125,7 +125,7 @@ QtObject {
 
     function expireNotification(id) {
         const item = notifications.find(notification => notification.id === id)
-        if (!item || item.resident || item.urgency === 2)
+        if (!item)
             return
         hideNotificationPopup(id)
     }
@@ -133,6 +133,7 @@ QtObject {
     function clearNotifications() {
         const current = notifications
         notifications = []
+        notificationsOpen = false
         for (const item of current) {
             if (item.native && typeof item.native.dismiss === "function")
                 item.native.dismiss()

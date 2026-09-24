@@ -79,20 +79,23 @@ Item {
                     x: root.margin + column * (root.noteWidth + root.gap)
                     y: root.margin + row * (root.noteHeight + root.gap)
 
-                    Rectangle {
+                    Core.SharpShape {
                         id: body
                         anchors.fill: parent
-                        color: Qt.rgba(Core.Colors.background.r, Core.Colors.background.g,
+                        cutBottomLeft: true
+                        cutBottomRight: true
+                        cutAmount: Core.MenuStyle.radius
+                        fillColor: Qt.rgba(Core.Colors.background.r, Core.Colors.background.g,
                                        Core.Colors.background.b, entry.hovered ? 0.72 : 0.42)
-                        border.width: 1
-                        border.color: entry.hovered
+                        strokeWidth: 1
+                        strokeColor: entry.hovered
                             ? Core.Colors.accent
                             : Qt.rgba(Core.Colors.accent2.r, Core.Colors.accent2.g, Core.Colors.accent2.b, 0.6)
                         transform: Matrix4x4 {
                             matrix: Qt.matrix4x4(1, 0.28, 0, -8,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
                         }
-                        Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
-                        Behavior on border.color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                        Behavior on fillColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                        Behavior on strokeColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
 
                         Rectangle {
                             anchors { top: parent.top; left: parent.left; right: parent.right }

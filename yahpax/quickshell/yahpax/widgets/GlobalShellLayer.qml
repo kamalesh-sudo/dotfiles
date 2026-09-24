@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import "../core" as Core
@@ -10,10 +9,15 @@ import "../audioframe"
 Variants {
     model: Quickshell.screens
 
-    PanelWindow {
+    Item {
+        id: screenRoot
+        required property var modelData
+
+        PanelWindow {
         id: root
         required property var modelData
-        screen: modelData
+        modelData: screenRoot.modelData
+        screen: screenRoot.modelData
 
         anchors.top: true
         anchors.bottom: true
@@ -30,78 +34,31 @@ Variants {
 
         mask: Region {
             Region { item: bar.revealInput }
-            Region { item: bar.inputItem }
+            Region { item: bar.contentVisible ? bar.inputItem : null }
             Region { item: power.inputItem }
-            Region { item: dock }
+            Region { item: dock.visible ? dock : null }
             Region { item: todoBoard.inputItem }
             Region { item: notifications.inputItem }
         }
 
-        // The layer itself is full-screen; this anchored border is the exact
-        // globalEdgeThickness perimeter on every edge and has no input of its own.
-        Rectangle {
-            id: edgeStrip
-            anchors.fill: parent
-            color: "transparent"
-            radius: Core.MenuStyle.sharedRadius.panel
-            border.width: Core.MenuStyle.globalEdgeThickness
-            border.color: root.globalSurfaceColor
-            z: 10
-            antialiasing: true
-            layer.enabled: true
-            layer.smooth: true
-        }
-
-        // Caelestia uses one BlobInvertedRect/BlobRect surface in its
-        // full-screen window. This Shape is the Yahpax-native equivalent:
-        // one continuous path joins the full-width shell edge to BarMorph,
-        // so there is no stacked connector, seam, or second border.
-        Shape {
+        // The PanelWindow is full-screen, but the visible cover is finite and
+        // follows the existing Bar/BarMorph footprint.
+        MenuPanel {
             id: shellSurface
-            anchors.fill: parent
+            // Match the visible cover to the actual BarMorph instead of the
+            // larger fixed host window. Keep it centered as the morph resizes.
+            x: bar.x + (bar.fixedWidth - bar.inputItem.width) / 2
+            y: 0
+            width: bar.inputItem.width
+            height: bar.y + bar.inputItem.y + bar.inputItem.height
             visible: bar.contentVisible
-            antialiasing: true
-            layer.enabled: true
-            layer.smooth: true
-
-            readonly property real barLeft: bar.x + bar.inputItem.x
-            readonly property real barRight: barLeft + bar.inputItem.width
-            readonly property real barTop: bar.y + bar.inputItem.y
-            readonly property real barBottom: barTop + bar.inputItem.height
-            // Keep the global surface intrusion equal to the global edge as the
-            // perimeter. The BarMorph remains at its existing coordinates.
-            readonly property real joinY: Core.MenuStyle.globalEdgeThickness
-            readonly property real bottomRadius: Math.min(bar.shellJoinRadius, bar.inputItem.height / 2)
-
-            ShapePath {
-                fillColor: root.globalSurfaceColor
-                strokeColor: Core.MenuStyle.globalBorderColor
-                strokeWidth: Core.MenuStyle.sharedRadius.border
-                joinStyle: ShapePath.RoundJoin
-                capStyle: ShapePath.RoundCap
-
-                PathMove { x: 0; y: 0 }
-                PathLine { x: shellSurface.width; y: 0 }
-                PathLine { x: shellSurface.width; y: shellSurface.joinY }
-                PathLine { x: shellSurface.barRight; y: shellSurface.joinY }
-                PathLine { x: shellSurface.barRight; y: shellSurface.barBottom - shellSurface.bottomRadius }
-                PathQuad {
-                    controlX: shellSurface.barRight
-                    controlY: shellSurface.barBottom
-                    x: shellSurface.barRight - shellSurface.bottomRadius
-                    y: shellSurface.barBottom
-                }
-                PathLine { x: shellSurface.barLeft + shellSurface.bottomRadius; y: shellSurface.barBottom }
-                PathQuad {
-                    controlX: shellSurface.barLeft
-                    controlY: shellSurface.barBottom
-                    x: shellSurface.barLeft
-                    y: shellSurface.barBottom - shellSurface.bottomRadius
-                }
-                PathLine { x: shellSurface.barLeft; y: shellSurface.joinY }
-                PathLine { x: 0; y: shellSurface.joinY }
-                PathLine { x: 0; y: 0 }
-            }
+            opacity: bar.revealProgress
+            // Asymmetric reference silhouette: square top and bottom-left,
+            // with matching diagonal cuts on both lower corners.
+            surfaceColor: root.globalSurfaceColor
+            outlineColor: Core.MenuStyle.globalBorderColor
+            outlineWidth: Core.MenuStyle.sharedRadius.border
+            surfaceOpacity: bar.revealProgress
         }
 
         Bar {
@@ -138,5 +95,57 @@ Variants {
         AudioFrameWindow {
             targetScreen: root.modelData
         }
+        }
+
+    // Functional screen reservations, following Caelestia's Exclusions.qml:
+    // each edge is an independent transparent layer-shell surface with an
+    // exclusive zone. These surfaces have no visual border and no input.
+    PanelWindow {
+        screen: screenRoot.modelData
+        anchors.top: true
+        implicitWidth: 1
+        implicitHeight: 1
+        color: "transparent"
+        exclusiveZone: Core.MenuStyle.globalEdgeThickness
+        mask: Region {}
+        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.layer: WlrLayer.Top
+    }
+
+    PanelWindow {
+        screen: screenRoot.modelData
+        anchors.bottom: true
+        implicitWidth: 1
+        implicitHeight: 1
+        color: "transparent"
+        exclusiveZone: Core.MenuStyle.globalEdgeThickness
+        mask: Region {}
+        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.layer: WlrLayer.Top
+    }
+
+    PanelWindow {
+        screen: screenRoot.modelData
+        anchors.left: true
+        implicitWidth: 1
+        implicitHeight: 1
+        color: "transparent"
+        exclusiveZone: Core.MenuStyle.globalEdgeThickness
+        mask: Region {}
+        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.layer: WlrLayer.Top
+    }
+
+    PanelWindow {
+        screen: screenRoot.modelData
+        anchors.right: true
+        implicitWidth: 1
+        implicitHeight: 1
+        color: "transparent"
+        exclusiveZone: Core.MenuStyle.globalEdgeThickness
+        mask: Region {}
+        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.layer: WlrLayer.Top
+    }
     }
 }

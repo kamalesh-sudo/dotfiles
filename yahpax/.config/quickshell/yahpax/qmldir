@@ -1,0 +1,22 @@
+singleton AppState 1.0 core/AppState.qml
+singleton Colors 1.0 core/Colors.qml
+singleton MenuStyle 1.0 core/MenuStyle.qml
+singleton WifiService 1.0 core/WifiService.qml
+singleton BluetoothService 1.0 core/BluetoothService.qml
+Corner 1.0 core/Corner.qml
+Bar 1.0 widgets/Bar.qml
+BarMorph 1.0 widgets/BarMorph.qml
+PowerGroup 1.0 widgets/PowerGroup.qml
+Dock 1.0 widgets/Dock.qml
+HoloRings 1.0 widgets/HoloRings.qml
+AppLauncher 1.0 widgets/AppLauncher.qml
+WifiMenu 1.0 widgets/WifiMenu.qml
+WifiPanel 1.0 widgets/WifiPanel.qml
+BluetoothPanel 1.0 widgets/BluetoothPanel.qml
+BluetoothMenu 1.0 widgets/BluetoothMenu.qml
+ClipboardHistory 1.0 widgets/ClipboardHistory.qml
+WallpaperSelector 1.0 widgets/WallpaperSelector.qml
+ArchSymbol 1.0 widgets/ArchSymbol.qml
+TodoBoard 1.0 widgets/TodoBoard.qml
+GlobalShellLayer 1.0 widgets/GlobalShellLayer.qml
+NotificationPopup 1.0 widgets/NotificationPopup.qml

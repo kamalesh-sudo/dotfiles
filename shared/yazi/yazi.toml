@@ -1,0 +1,178 @@
+# ============================================================
+# OPENERS
+# ============================================================
+
+[opener]
+
+# ------------------------------------------------------------
+# Editors
+# ------------------------------------------------------------
+
+edit = [
+    { run = "nvim %s", block = true, for = "unix", desc = "Neovim" },
+    { run = "vim %s", block = true, for = "unix", desc = "Vim" },
+    { run = "kwrite %s", orphan = true, for = "unix", desc = "KWrite" },
+    { run = "codium %s", block = true, for = "unix", desc = "VSCodium" },
+]
+
+glow = [    { run = 'foot --app-id=glow -e glow "$1"', orphan = true }
+
+]
+
+
+# ------------------------------------------------------------
+# PDF
+# ------------------------------------------------------------
+
+pdf = [
+    { run = "zathura %s", orphan = true, for = "unix", desc = "Zathura" },
+]
+
+# ------------------------------------------------------------
+# Audio
+# ------------------------------------------------------------
+
+music = [
+    { run = "/opt/Spun/scripts/run.sh %s", orphan = true, for = "unix", desc = "Spun Music" },
+]
+
+# ------------------------------------------------------------
+# Video
+# ------------------------------------------------------------
+
+video = [
+    { run = "mpv %s", orphan = true, for = "unix", desc = "MPV" },
+]
+
+# ------------------------------------------------------------
+# Images
+# ------------------------------------------------------------
+
+image = [
+    { run = "imv %s", orphan = true, for = "unix", desc = "imv" },
+    { run = "satty -f %s", block = true, for = "unix", desc = "Satty" },
+]
+
+# ------------------------------------------------------------
+# Office
+# ------------------------------------------------------------
+
+office = [
+    { run = "onlyoffice-desktopeditors %s", orphan = true, for = "unix", desc = "ONLYOFFICE" },
+]
+
+# ------------------------------------------------------------
+# Archives
+# ------------------------------------------------------------
+
+archive = [
+    { run = "ark %s", orphan = true, for = "unix", desc = "Ark" },
+]
+
+# ------------------------------------------------------------
+# Generic fallback
+# ------------------------------------------------------------
+
+open = [
+    { run = "xdg-open %s", orphan = true, for = "unix", desc = "Default Application" },
+]
+
+
+# ============================================================
+# FILE TYPE RULES
+# ============================================================
+
+[open]
+
+prepend_rules = [
+
+    # --------------------------------------------------------
+    # Text / Source / Config
+    # --------------------------------------------------------
+
+#    { mime = "text/*", use = [ "edit", "code" ] },
+
+    { url = "*.c", use = [ "edit", "code" ] },
+    { url = "*.h", use = [ "edit", "code" ] },
+    { url = "*.cpp", use = [ "edit", "code" ] },
+    { url = "*.hpp", use = [ "edit", "code" ] },
+
+    { url = "*.rs", use = [ "edit", "code" ] },
+    { url = "*.go", use = [ "edit", "code" ] },
+
+    { url = "*.py", use = [ "edit", "code" ] },
+    { url = "*.js", use = [ "edit", "code" ] },
+    { url = "*.ts", use = [ "edit", "code" ] },
+    { url = "*.jsx", use = [ "edit", "code" ] },
+    { url = "*.tsx", use = [ "edit", "code" ] },
+
+    { url = "*.lua", use = [ "edit", "code" ] },
+
+    { url = "*.sh", use = [ "edit", "code" ] },
+    { url = "*.fish", use = [ "edit", "code" ] },
+
+    { url = "*.toml", use = [ "edit", "code" ] },
+    { url = "*.yaml", use = [ "edit", "code" ] },
+    { url = "*.yml", use = [ "edit", "code" ] },
+    { url = "*.json", use = [ "edit", "code" ] },
+
+    { url = "*.xml", use = [ "edit", "code" ] },
+    { url = "*.html", use = [ "edit", "code" ] },
+    { url = "*.css", use = [ "edit", "code" ] },
+
+    { url = "*.conf", use = [ "edit", "code" ] },
+    { url = "*.cfg", use = [ "edit", "code" ] },
+    { url = "*.ini", use = [ "edit", "code" ] },
+
+    { url = "*.md", use = [ "glow" ] },
+
+    # --------------------------------------------------------
+    # PDF
+    # --------------------------------------------------------
+
+    { mime = "application/pdf", use = "pdf" },
+
+    # --------------------------------------------------------
+    # Audio
+    # --------------------------------------------------------
+
+    { mime = "audio/*", use = "music" },
+
+    # --------------------------------------------------------
+    # Video
+    # --------------------------------------------------------
+
+    { mime = "video/*", use = "video" },
+
+    # --------------------------------------------------------
+    # Images
+    # --------------------------------------------------------
+
+    { mime = "image/*", use = "image" },
+
+    # --------------------------------------------------------
+    # Office
+    # --------------------------------------------------------
+
+    { url = "*.{doc,docx,odt,rtf}", use = "office" },
+    { url = "*.{xls,xlsx,ods,csv}", use = "office" },
+    { url = "*.{ppt,pptx,odp}", use = "office" },
+
+    # --------------------------------------------------------
+    # Archives
+    # --------------------------------------------------------
+
+    { mime = "application/zip", use = "archive" },
+    { mime = "application/x-7z-compressed", use = "archive" },
+    { mime = "application/x-rar", use = "archive" },
+    { mime = "application/x-tar", use = "archive" },
+    { mime = "application/gzip", use = "archive" },
+]
+
+# ============================================================
+# FALLBACK
+# ============================================================
+
+append_rules = [
+    { url = "*", use = "open" },
+]

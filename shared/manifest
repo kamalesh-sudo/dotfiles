@@ -1,8 +1,0 @@
-# type|source relative to HOME|repository destination
-file|.config/fish/config.fish|shared/fish/config.fish
-file|.config/fish/functions/dotpush.fish|shared/fish/functions/dotpush.fish
-file|.config/fish/functions/dotfetch.fish|shared/fish/functions/dotfetch.fish
-file|.config/fish/functions/fish_greeting.fish|shared/fish/functions/fish_greeting.fish
-file|.config/foot/foot.ini|shared/foot/foot.ini
-file|.config/kitty/kitty.conf|shared/kitty/kitty.conf
-file|.config/starship.toml|shared/starship.toml

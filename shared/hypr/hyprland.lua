@@ -139,6 +139,33 @@ hl.config({
 package.loaded["colors-wal"] = nil
 pcall(require, "colors-wal")
 
+-- Minimal, consistent compositor motion. This follows the Hyprland 0.56
+-- animation tree: windowsIn/windowsOut handle open/close, windowsMove is
+-- inherited from windows for moves between workspaces, and specialWorkspace
+-- follows the regular workspace transition.
+pcall(function()
+    hl.config({ animations = { enabled = true } })
+    hl.curve("yahpaxEaseOut", {
+        type = "bezier",
+        points = { { 0.22, 1.0 }, { 0.36, 1.0 } },
+    })
+
+    hl.animation({ leaf = "global", enabled = true, speed = 2, bezier = "yahpaxEaseOut" })
+    hl.animation({ leaf = "windows", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "popin 95%" })
+    hl.animation({ leaf = "windowsIn", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "popin 95%" })
+    hl.animation({ leaf = "windowsOut", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "popin 95%" })
+    hl.animation({ leaf = "fade", enabled = true, speed = 2, bezier = "yahpaxEaseOut" })
+    hl.animation({ leaf = "fadeSwitch", enabled = true, speed = 2, bezier = "yahpaxEaseOut" })
+    hl.animation({ leaf = "workspaces", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "workspacesIn", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "workspacesOut", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2, bezier = "yahpaxEaseOut", style = "slidefade 12%" })
+    hl.animation({ leaf = "border", enabled = true, speed = 2, bezier = "yahpaxEaseOut" })
+    hl.animation({ leaf = "borderangle", enabled = false })
+end)
+
 
 -----------------------
 ---- LAYOUTS ----------

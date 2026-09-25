@@ -39,9 +39,13 @@ Item {
         }
 
         anchors.fill: parent
+        readonly property int contentHeight: list.contentHeight + panelPadding * 2
+            + (historyOpen ? header.implicitHeight + Core.MenuStyle.sharedSpacing.small : 0)
         readonly property int popupHeight: Math.min(maxPanelHeight,
-            Math.max(1, list.contentHeight + panelPadding * 2
-                + (historyOpen ? header.implicitHeight + Core.MenuStyle.sharedSpacing.small : 0)))
+            Math.max(historyOpen
+                ? Core.MenuStyle.notification.minPanelHeight
+                : Core.MenuStyle.notification.popupMinHeight,
+                contentHeight))
         visible: true
 
         Timer {
@@ -151,7 +155,12 @@ Item {
                 ListView {
                     id: list
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    // The surface height is derived from contentHeight. Do
+                    // not fill the height here, otherwise the ListView and
+                    // its parent form a circular size binding and additional
+                    // popup delegates are clipped into the first slot.
+                    Layout.fillHeight: false
+                    Layout.preferredHeight: Math.min(contentHeight, window.maxPanelHeight)
                     visible: !window.historyOpen || window.hasNotifications
                     clip: true
                     spacing: Core.MenuStyle.sharedSpacing.medium
@@ -192,7 +201,8 @@ Item {
                         width: list.width
                         readonly property bool popupMode: !window.historyOpen
                         readonly property var actions: wrapper.modelData.actions || []
-                        implicitHeight: card.implicitHeight
+                        height: card.height
+                        implicitHeight: card.height
 
                         ListView.onRemove: removeAnimation.start()
 
@@ -216,7 +226,16 @@ Item {
                         Core.SharpShape {
                             id: card
                             width: parent.width
-                            implicitHeight: content.implicitHeight + Core.MenuStyle.sharedSpacing.paddingMedium * 2
+                            // Keep every delegate physically large enough for
+                            // its compact header even when a Layout has not
+                            // published its implicit height yet. This avoids
+                            // zero-height rows when a second notification is
+                            // inserted while the first popup is visible.
+                            readonly property real contentHeight: Math.max(
+                                content.implicitHeight,
+                                Core.MenuStyle.notification.iconSize)
+                            height: contentHeight + Core.MenuStyle.sharedSpacing.paddingMedium * 2
+                            implicitHeight: height
                             cutBottomLeft: true
                             cutBottomRight: true
                             cutAmount: Core.MenuStyle.radius

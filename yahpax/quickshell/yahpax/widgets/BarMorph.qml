@@ -219,6 +219,12 @@ Item {
                             property int previousIndex: 0
                             Component.onCompleted: previousIndex = activeIndex
                             property real blobX: activeIndex * unit
+                            Behavior on blobX {
+                                NumberAnimation {
+                                    duration: Core.MenuStyle.workspaceSwitchDuration
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
                             onActiveIndexChanged: {
                                 previousIndex = activeIndex;
                                 blobX = activeIndex * unit;

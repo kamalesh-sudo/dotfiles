@@ -48,6 +48,8 @@ QtObject {
     readonly property int expressiveDefaultEffectsDuration: 200
     // Slow opacity/state transition duration, in milliseconds.
     readonly property int expressiveSlowEffectsDuration: 300
+    // Duration matching Hyprland's minimal workspace transition.
+    readonly property int workspaceSwitchDuration: 200
 
     // Caelestia's cubic-bezier control points, kept as lists because Yahpax
     // uses QtQuick's Easing.BezierSpline directly.
@@ -127,7 +129,7 @@ QtObject {
     // Radius used by thumbnail/icon surfaces.
     readonly property int thumbnailRadius: 26
     // Shared border thickness for shell surfaces.
-    readonly property int borderWidth: 1
+    readonly property int borderWidth: 2
     // Smallest gap between adjacent controls.
     readonly property int spacingTiny: 2
     // Small gap between related controls.
@@ -171,7 +173,7 @@ QtObject {
         // Width ratio used by the collapsed BarMorph.
         readonly property real collapsedWidthRatio: 0.300
         // Bottom inset on each side of the collapsed bar trapezoid.
-        readonly property real collapsedTrapezoidInsetRatio: 0.12
+        readonly property real collapsedTrapezoidInsetRatio: 0.025
         // Maximum collapsed BarMorph width.
         readonly property real collapsedWidthMax: 880
         // Horizontal padding around the bar's icon row.
@@ -294,6 +296,8 @@ QtObject {
         readonly property real maxPanelHeight: 520
         // Minimum Notification Center height while it has content.
         readonly property real minPanelHeight: 180
+        // Minimum height of the compact automatic notification popup card.
+        readonly property real popupMinHeight: 88
         // Vertical screen padding used to calculate available panel height.
         readonly property real screenPadding: -0
         // Refresh interval for relative notification timestamps.

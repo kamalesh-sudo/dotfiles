@@ -63,7 +63,7 @@ Item {
                     { glyph: "\uf011", action: "shutdown" },
                     { glyph: "\uf186", action: "sleep" },
                     { glyph: "\uf023", action: "lock" },
-                    { glyph: "\uf04c", action: "sleep" }
+                    { glyph: "\udb81\udf09", action: "reboot" }
                 ]
 
                 delegate: Core.SharpShape {

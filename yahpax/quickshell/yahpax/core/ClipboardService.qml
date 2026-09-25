@@ -48,6 +48,13 @@ QtObject {
             splitMarker: "\n"
             onRead: root.refreshHistory()
         }
+        onExited: {
+            // Keep the UI listener alive if wl-paste exits during a clipboard
+            // owner transition or compositor reconnect.
+            Qt.callLater(function() {
+                if (!textWatcher.running) textWatcher.running = true;
+            });
+        }
     }
 
     property Process imageWatcher: Process {
@@ -57,6 +64,11 @@ QtObject {
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: root.refreshHistory()
+        }
+        onExited: {
+            Qt.callLater(function() {
+                if (!imageWatcher.running) imageWatcher.running = true;
+            });
         }
     }
 }

@@ -22,6 +22,20 @@ Shape {
     readonly property real topRightCut: cutTopRight ? Math.min(cutAmount, width / 2, height / 2) : 0
     readonly property real bottomLeftCut: cutBottomLeft ? Math.min(cutAmount, width / 2, height / 2) : 0
     readonly property real bottomRightCut: cutBottomRight ? Math.min(cutAmount, width / 2, height / 2) : 0
+    // Keep the complete stroke inside the clipped item. A Shape stroke is
+    // centered on its path; placing the path on x/y=0 clipped half of the
+    // left edge (and similarly affected the other outer edges).
+    readonly property real strokeInset: Math.max(0, strokeWidth / 2)
+    readonly property real pathLeft: strokeInset
+    readonly property real pathTop: strokeInset
+    readonly property real pathRight: Math.max(pathLeft, width - strokeInset)
+    readonly property real pathBottom: Math.max(pathTop, height - strokeInset)
+    readonly property real pathWidth: Math.max(0, pathRight - pathLeft)
+    readonly property real pathHeight: Math.max(0, pathBottom - pathTop)
+    readonly property real pathTopLeftCut: cutTopLeft ? Math.min(cutAmount, pathWidth / 2, pathHeight / 2) : 0
+    readonly property real pathTopRightCut: cutTopRight ? Math.min(cutAmount, pathWidth / 2, pathHeight / 2) : 0
+    readonly property real pathBottomLeftCut: cutBottomLeft ? Math.min(cutAmount, pathWidth / 2, pathHeight / 2) : 0
+    readonly property real pathBottomRightCut: cutBottomRight ? Math.min(cutAmount, pathWidth / 2, pathHeight / 2) : 0
 
     Behavior on cutAmount {
         NumberAnimation {
@@ -43,15 +57,15 @@ Shape {
         joinStyle: ShapePath.MiterJoin
         capStyle: ShapePath.FlatCap
 
-        PathMove { x: root.topLeftCut; y: 0 }
-        PathLine { x: root.width - root.topRightCut; y: 0 }
-        PathLine { x: root.width; y: root.topRightCut }
-        PathLine { x: root.width; y: root.height - root.bottomRightCut }
-        PathLine { x: root.width - root.bottomRightCut; y: root.height }
-        PathLine { x: root.bottomLeftCut; y: root.height }
-        PathLine { x: 0; y: root.height - root.bottomLeftCut }
-        PathLine { x: 0; y: root.topLeftCut }
-        PathLine { x: root.topLeftCut; y: 0 }
+        PathMove { x: root.pathLeft + root.pathTopLeftCut; y: root.pathTop }
+        PathLine { x: root.pathRight - root.pathTopRightCut; y: root.pathTop }
+        PathLine { x: root.pathRight; y: root.pathTop + root.pathTopRightCut }
+        PathLine { x: root.pathRight; y: root.pathBottom - root.pathBottomRightCut }
+        PathLine { x: root.pathRight - root.pathBottomRightCut; y: root.pathBottom }
+        PathLine { x: root.pathLeft + root.pathBottomLeftCut; y: root.pathBottom }
+        PathLine { x: root.pathLeft; y: root.pathBottom - root.pathBottomLeftCut }
+        PathLine { x: root.pathLeft; y: root.pathTop + root.pathTopLeftCut }
+        PathLine { x: root.pathLeft + root.pathTopLeftCut; y: root.pathTop }
     }
 
     Item {

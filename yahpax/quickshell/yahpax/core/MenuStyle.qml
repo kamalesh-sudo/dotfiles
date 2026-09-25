@@ -205,8 +205,32 @@ QtObject {
         readonly property real wallpaperWidthRatio: 0.5
         // Maximum wallpaper selector width.
         readonly property real wallpaperMaxWidth: 720
-        // Wallpaper selector height beyond the bar row.
-        readonly property real wallpaperHeight: 80
+        // Wallpaper selector height beyond the bar row, including its header and carousel.
+        readonly property real wallpaperHeight: 180
+        // Wallpaper selector header height.
+        readonly property real wallpaperHeaderHeight: 20
+        // Gap between the wallpaper selector header and carousel.
+        readonly property real wallpaperContentGap: 8
+        // Largest center wallpaper thumbnail width.
+        readonly property real wallpaperCenterWidth: 220
+        // Largest center wallpaper thumbnail height.
+        readonly property real wallpaperCenterHeight: 118
+        // First side thumbnail width in the coverflow.
+        readonly property real wallpaperNearWidth: 154
+        // First side thumbnail height in the coverflow.
+        readonly property real wallpaperNearHeight: 84
+        // Second side thumbnail width in the coverflow.
+        readonly property real wallpaperMiddleWidth: 108
+        // Second side thumbnail height in the coverflow.
+        readonly property real wallpaperMiddleHeight: 60
+        // Outermost thumbnail width in the coverflow.
+        readonly property real wallpaperFarWidth: 72
+        // Outermost thumbnail height in the coverflow.
+        readonly property real wallpaperFarHeight: 40
+        // Horizontal overlap between neighboring coverflow tiers.
+        readonly property real wallpaperTierOverlap: 34
+        // Vertical lift applied to smaller side thumbnails.
+        readonly property real wallpaperSideLift: 6
         // Compact fallback menu width.
         readonly property real compactWidth: 280
         // Compact fallback menu height.

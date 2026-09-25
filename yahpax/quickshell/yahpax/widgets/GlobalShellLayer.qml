@@ -30,6 +30,13 @@ Variants {
         readonly property color globalSurfaceColor: Core.MenuStyle.globalSurfaceColor
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: Core.MenuStyle.namespace
+        // Give keyboard focus to the expanded selector surface on demand.
+        // The collapsed shell remains keyboard-transparent.
+        // Match Caelestia's drawer model: request keyboard focus only while a
+        // mode is open, then let the loaded mode claim the active focus item.
+        WlrLayershell.keyboardFocus: bar.expanded
+            ? WlrKeyboardFocus.OnDemand
+            : WlrKeyboardFocus.None
         exclusionMode: ExclusionMode.Ignore
 
         mask: Region {

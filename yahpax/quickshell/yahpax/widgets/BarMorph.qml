@@ -19,10 +19,42 @@ Item {
     readonly property bool expanded: enabledModes.indexOf(Core.AppState.barMorph) >= 0
                                       && Core.AppState.barMorph !== "" && onThisScreen
     property bool hoverSurfaceEntered: false
+    focus: expanded
+
+    function handleSelectorKey(key) {
+        if (!expanded || !contentLoader.item) return false;
+        if (key === Qt.Key_Escape) {
+            Core.AppState.closeMorph();
+            return true;
+        }
+        if (contentLoader.item.handleKey)
+            return contentLoader.item.handleKey(key);
+        return false;
+    }
+
+    Keys.onPressed: (event) => {
+        if (root.handleSelectorKey(event.key)) event.accepted = true;
+    }
 
     onExpandedChanged: {
-        if (!expanded)
+        if (!expanded) {
             hoverSurfaceEntered = false
+        } else {
+            // `focus: true` only makes the item focusable. Claim focus after
+            // the Loader has been activated so keys also work when the mode
+            // was opened while another application had focus.
+            Qt.callLater(function() {
+                if (!root.expanded) return;
+                if (contentLoader.item && contentLoader.item.forceActiveFocus)
+                    contentLoader.item.forceActiveFocus();
+                else
+                    root.forceActiveFocus();
+            });
+        }
+    }
+
+    Component.onCompleted: {
+        if (expanded) forceActiveFocus();
     }
     readonly property var expandedSize: root.targetSize(Core.AppState.barMorph, modelData ? modelData.width : Core.MenuStyle.layout.defaultScreenWidth)
     readonly property real expandedWidth: expandedSize.w
@@ -296,6 +328,14 @@ Item {
             width: Math.max(0, parent.width - 24)
             height: Math.max(0, parent.height - 24)
             active: root.expanded
+            focus: root.expanded
+            onLoaded: {
+                if (root.expanded && item && item.forceActiveFocus)
+                    Qt.callLater(function() {
+                        if (root.expanded && contentLoader.item)
+                            contentLoader.item.forceActiveFocus();
+                    });
+            }
             sourceComponent: {
                 switch (Core.AppState.barMorph) {
                     case "wallpaper": return wallpaperContent;
@@ -332,7 +372,7 @@ Item {
                     id: laRoot
                     anchors.fill: parent
                     property string query: ""
-                    property int selIndex: 0
+                    property int selIndex: -1
 
                     readonly property var apps: {
                         const q = query.trim().toLowerCase();
@@ -340,7 +380,32 @@ Item {
                         return root.launcherApplications.filter(d => (d.name || "").toLowerCase().includes(q)
                                             || (d.comment || "").toLowerCase().includes(q));
                     }
-                    onQueryChanged: selIndex = 0
+                    function clampSelection() {
+                        selIndex = apps.length > 0 ? Math.max(0, Math.min(apps.length - 1, selIndex)) : -1;
+                    }
+
+                    function moveSelection(delta) {
+                        clampSelection();
+                        if (apps.length === 0) return;
+                        selIndex = Math.max(0, Math.min(apps.length - 1, selIndex + delta));
+                        laList.positionViewAtIndex(selIndex, ListView.Contain);
+                    }
+
+                    function handleKey(key) {
+                        if (key === Qt.Key_Up) moveSelection(-1);
+                        else if (key === Qt.Key_Down) moveSelection(1);
+                        else if (key === Qt.Key_Home) {
+                            selIndex = apps.length > 0 ? 0 : -1;
+                            if (selIndex >= 0) laList.positionViewAtIndex(selIndex, ListView.Beginning);
+                        } else if (key === Qt.Key_End) {
+                            selIndex = apps.length - 1;
+                            if (selIndex >= 0) laList.positionViewAtIndex(selIndex, ListView.End);
+                        } else return false;
+                        return true;
+                    }
+
+                    onQueryChanged: selIndex = apps.length > 0 ? 0 : -1
+                    onAppsChanged: clampSelection()
 
                     Column {
                         anchors.fill: parent
@@ -370,19 +435,29 @@ Item {
 
                                 Keys.onPressed: (event) => {
                                     if (event.key === Qt.Key_Up) {
-                                        laRoot.selIndex = Math.max(0, laRoot.selIndex - 1);
-                                        laList.positionViewAtIndex(laRoot.selIndex, ListView.Contain);
+                                        laRoot.moveSelection(-1);
                                         event.accepted = true;
                                     } else if (event.key === Qt.Key_Down) {
-                                        laRoot.selIndex = Math.max(0, Math.min(laRoot.apps.length - 1, laRoot.selIndex + 1));
-                                        laList.positionViewAtIndex(laRoot.selIndex, ListView.Contain);
+                                        laRoot.moveSelection(1);
+                                        event.accepted = true;
+                                    } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+                                        // The launcher is currently a one-column list.
+                                        event.accepted = true;
+                                    } else if (event.key === Qt.Key_Home) {
+                                        laRoot.selIndex = laRoot.apps.length > 0 ? 0 : -1;
+                                        if (laRoot.selIndex >= 0) laList.positionViewAtIndex(laRoot.selIndex, ListView.Beginning);
+                                        event.accepted = true;
+                                    } else if (event.key === Qt.Key_End) {
+                                        laRoot.selIndex = laRoot.apps.length - 1;
+                                        if (laRoot.selIndex >= 0) laList.positionViewAtIndex(laRoot.selIndex, ListView.End);
                                         event.accepted = true;
                                     } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                         const raw = laRoot.query.trim();
                                         if (raw.startsWith(">")) {
-                                            Quickshell.execDetached(["sh", "-c", raw.slice(1).trim()]);
-                                            Core.AppState.closeMorph();
-                                        } else if (laRoot.apps.length > 0) {
+                                            const command = raw.slice(1).trim();
+                                            if (command.length > 0) Quickshell.execDetached(["sh", "-c", command]);
+                                            if (command.length > 0) Core.AppState.closeMorph();
+                                        } else if (laRoot.selIndex >= 0 && laRoot.selIndex < laRoot.apps.length) {
                                             laRoot.apps[laRoot.selIndex].execute();
                                             Core.AppState.closeMorph();
                                         }
@@ -463,7 +538,9 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onEntered: laRoot.selIndex = index
+                            onEntered: {
+                                if (index >= 0 && index < laRoot.apps.length) laRoot.selIndex = index;
+                            }
                                     onClicked: {
                                         modelData.execute();
                                         Core.AppState.closeMorph();
@@ -481,20 +558,54 @@ Item {
                     id: chRoot
                     anchors.fill: parent
                     property var items: []
-                    property int selIndex: 0
+                    property int selIndex: -1
                     focus: true
-                    onItemsChanged: selIndex = 0
+                    Component.onCompleted: forceActiveFocus()
+                    function clampSelection() {
+                        selIndex = items.length > 0 ? Math.max(0, Math.min(items.length - 1, selIndex)) : -1;
+                    }
+
+                    function moveSelection(delta) {
+                        clampSelection();
+                        if (items.length === 0) return;
+                        selIndex = Math.max(0, Math.min(items.length - 1, selIndex + delta));
+                        chList.positionViewAtIndex(selIndex, ListView.Contain);
+                    }
+
+                    function handleKey(key) {
+                        if (key === Qt.Key_Up) moveSelection(-1);
+                        else if (key === Qt.Key_Down) moveSelection(1);
+                        else if (key === Qt.Key_Home) {
+                            selIndex = items.length > 0 ? 0 : -1;
+                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.Beginning);
+                        } else if (key === Qt.Key_End) {
+                            selIndex = items.length - 1;
+                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.End);
+                        } else return false;
+                        return true;
+                    }
+
+                    onItemsChanged: clampSelection()
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Up) {
-                            selIndex = Math.max(0, selIndex - 1);
-                            chList.positionViewAtIndex(selIndex, ListView.Contain);
+                            moveSelection(-1);
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Down) {
-                            selIndex = Math.max(0, Math.min(items.length - 1, selIndex + 1));
-                            chList.positionViewAtIndex(selIndex, ListView.Contain);
+                            moveSelection(1);
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+                            // Clipboard entries are currently a one-column list.
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Home) {
+                            selIndex = items.length > 0 ? 0 : -1;
+                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.Beginning);
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_End) {
+                            selIndex = items.length - 1;
+                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.End);
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (items.length > 0) {
+                            if (selIndex >= 0 && selIndex < items.length) {
                                 Quickshell.execDetached(["fish",
                                     Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
                                     items[selIndex]]);
@@ -564,7 +675,9 @@ Item {
                                     id: chMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onEntered: chRoot.selIndex = index
+                            onEntered: {
+                                if (index >= 0 && index < chRoot.items.length) chRoot.selIndex = index;
+                            }
                                     onClicked: {
                                         Quickshell.execDetached(["fish",
                                     Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
@@ -581,32 +694,93 @@ Item {
 
             Component {
                 id: wallpaperContent
-                Column {
+                Item {
                     id: wpRoot
                     anchors.fill: parent
-                    spacing: Core.MenuStyle.spacingMedium
                     focus: true
 
                     property var items: []
-                    property int selIndex: 0
+                    property int currentCenterIndex: -1
+                    property real visualCenterIndex: currentCenterIndex
+                    property string activeWallpaperPath: ""
 
-                    Component.onCompleted: forceActiveFocus()
+                    Component.onCompleted: {
+                        forceActiveFocus();
+                        currentWallpaperReader.running = true;
+                    }
+
+                    function clampCenter() {
+                        currentCenterIndex = items.length > 0
+                            ? Math.max(0, Math.min(items.length - 1, currentCenterIndex))
+                            : -1;
+                    }
+
+                    function initializeCenter() {
+                        if (items.length === 0) {
+                            currentCenterIndex = -1;
+                            return;
+                        }
+                        const found = items.findIndex(item => item.path === activeWallpaperPath);
+                        currentCenterIndex = found >= 0 ? found : 0;
+                    }
+
+                    function handleKey(key) {
+                        if (key === Qt.Key_Left) moveCenter(-1);
+                        else if (key === Qt.Key_Right) moveCenter(1);
+                        else if (key === Qt.Key_Home) {
+                            currentCenterIndex = items.length > 0 ? 0 : -1;
+                        } else if (key === Qt.Key_End) {
+                            currentCenterIndex = items.length - 1;
+                        } else return false;
+                        return true;
+                    }
+
+                    function moveCenter(delta) {
+                        if (items.length === 0) {
+                            currentCenterIndex = -1;
+                            return;
+                        }
+                        currentCenterIndex = Math.max(0, Math.min(items.length - 1,
+                            currentCenterIndex + delta));
+                    }
 
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
-                            selIndex = Math.min(selIndex + 1, items.length - 1);
-                            wpList.positionViewAtIndex(selIndex, ListView.Center);
+                            moveCenter(1);
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Left || event.key === Qt.Key_H) {
-                            selIndex = Math.max(0, selIndex - 1);
-                            wpList.positionViewAtIndex(selIndex, ListView.Center);
+                            moveCenter(-1);
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Down) {
+                            // The coverflow is a single horizontal row.
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Home) {
+                            currentCenterIndex = items.length > 0 ? 0 : -1;
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_End) {
+                            currentCenterIndex = items.length - 1;
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (items.length > 0) wpRoot.applyWallpaper(items[selIndex].path);
+                            if (currentCenterIndex >= 0 && currentCenterIndex < items.length)
+                                wpRoot.applyWallpaper(items[currentCenterIndex].path);
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Escape) {
                             Core.AppState.closeMorph();
                             event.accepted = true;
+                        }
+                    }
+
+                    onCurrentCenterIndexChanged: {
+                        clampCenter();
+                        visualCenterIndex = currentCenterIndex;
+                    }
+                    onItemsChanged: initializeCenter()
+
+                    Behavior on visualCenterIndex {
+                        NumberAnimation {
+                            duration: Core.MenuStyle.menuTransition.popupDuration
+                            easing.type: Core.MenuStyle.bezierSplineType
+                            easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve
                         }
                     }
 
@@ -635,73 +809,156 @@ Item {
                                         const parts = l.split("\t");
                                         return { path: parts[0], thumb: parts[1] || parts[0] };
                                     });
+                                wpRoot.initializeCenter();
                             }
                         }
                     }
 
-                    Text {
-                        text: "Wallpapers"
-                        color: Core.Colors.foreground
-                        font.family: Core.Colors.fontFamily
-                        font.pixelSize: 12
-                        font.weight: Core.Colors.bodyWeight
+                    Process {
+                        id: currentWallpaperReader
+                        command: ["cat", Quickshell.env("HOME") + "/.cache/yahpax/rice/current-wallpaper"]
+                        running: false
+                        stdout: StdioCollector {
+                            onStreamFinished: {
+                                wpRoot.activeWallpaperPath = this.text.split("\n")[0].trim();
+                                wpRoot.initializeCenter();
+                            }
+                        }
                     }
 
-                    ListView {
-                      id: wpList
-                      width: parent.width
-                      height: parent.height - 24
-                      orientation: ListView.Horizontal
-                      spacing: 10
-                      clip: true
-                      cacheBuffer: 400
-                      model: wpRoot.items
-                      currentIndex: wpRoot.selIndex
-                      highlightMoveDuration: 120
-                      onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Center)
+                    RowLayout {
+                        id: wallpaperHeader
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        width: parent.width
+                        height: Core.MenuStyle.menu.wallpaperHeaderHeight
+                        spacing: Core.MenuStyle.sharedSpacing.small
 
-                      delegate: Item {
-                        width: 122; height: 66
-                        Rectangle {
-                                  id: card
-                                  width: 122; height: 66
-                                  radius: Core.MenuStyle.thumbnailRadius
-                                  clip: true
-                                  color: "transparent"
-                                  border.width: index === wpRoot.selIndex ? 2 : 1
-                                  border.color: index === wpRoot.selIndex ? Core.Colors.accent : Core.Colors.muted
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Wallpapers"
+                            color: Core.Colors.foreground
+                            font.family: Core.Colors.fontFamily
+                            font.pixelSize: 12
+                            font.weight: Core.Colors.titleWeight
+                        }
 
-                                  Image {
-                                        id: thumb
+                        Text {
+                            text: wpRoot.items.length > 0
+                                ? (wpRoot.currentCenterIndex + 1) + " / " + wpRoot.items.length
+                                : "empty"
+                            color: Core.Colors.muted
+                            font.family: Core.Colors.fontFamily
+                            font.pixelSize: 10
+                            font.weight: Core.Colors.labelWeight
+                        }
+                    }
+
+                    Item {
+                        id: coverflow
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: wallpaperHeader.bottom
+                        anchors.topMargin: Core.MenuStyle.menu.wallpaperContentGap
+                        anchors.bottom: parent.bottom
+                        clip: true
+
+                        Text {
+                            anchors.centerIn: parent
+                            visible: wpRoot.items.length === 0
+                            text: "No wallpapers found"
+                            color: Core.Colors.muted
+                            font.family: Core.Colors.fontFamily
+                            font.pixelSize: 11
+                        }
+
+                        Repeater {
+                            model: [-3, -2, -1, 0, 1, 2, 3]
+
+                            delegate: Item {
+                                id: slot
+                                required property int modelData
+                                property int offset: modelData
+                                property real visualOffset: offset + (wpRoot.currentCenterIndex - wpRoot.visualCenterIndex)
+                                property int wallpaperIndex: Math.round(wpRoot.visualCenterIndex + offset)
+                                property bool valid: wallpaperIndex >= 0 && wallpaperIndex < wpRoot.items.length
+                                property var wallpaper: valid ? wpRoot.items[wallpaperIndex] : null
+                                property int tier: Math.min(3, Math.abs(Math.round(visualOffset)))
+                                property real thumbWidth: tier === 0 ? Core.MenuStyle.menu.wallpaperCenterWidth
+                                    : tier === 1 ? Core.MenuStyle.menu.wallpaperNearWidth
+                                    : tier === 2 ? Core.MenuStyle.menu.wallpaperMiddleWidth
+                                    : Core.MenuStyle.menu.wallpaperFarWidth
+                                property real thumbHeight: tier === 0 ? Core.MenuStyle.menu.wallpaperCenterHeight
+                                    : tier === 1 ? Core.MenuStyle.menu.wallpaperNearHeight
+                                    : tier === 2 ? Core.MenuStyle.menu.wallpaperMiddleHeight
+                                    : Core.MenuStyle.menu.wallpaperFarHeight
+                                property real centerX: (coverflow.width - Core.MenuStyle.menu.wallpaperCenterWidth) / 2
+                                // Use the coverflow's actual center point. The
+                                // overlap is increased only when necessary so
+                                // all three side tiers remain inside a narrow
+                                // panel without changing their size tiers.
+                                property real effectiveOverlap: Math.max(
+                                    Core.MenuStyle.menu.wallpaperTierOverlap,
+                                    (Core.MenuStyle.menu.wallpaperCenterWidth / 2
+                                     + Core.MenuStyle.menu.wallpaperFarWidth
+                                     + 2 * Core.MenuStyle.menu.wallpaperNearWidth
+                                     - coverflow.width / 2) / 3)
+                                property real itemX: {
+                                    const direction = visualOffset < 0 ? -1 : 1;
+                                    const distance = Math.abs(visualOffset);
+                                    const centerPoint = coverflow.width / 2;
+                                    if (distance < 0.01) return centerX;
+                                    let x = centerPoint + direction * (Core.MenuStyle.menu.wallpaperCenterWidth / 2
+                                        + thumbWidth / 2 - effectiveOverlap);
+                                    if (distance > 1) x += direction * (distance - 1)
+                                        * (Core.MenuStyle.menu.wallpaperNearWidth - effectiveOverlap);
+                                    return x - thumbWidth / 2;
+                                }
+                                x: itemX
+                                y: (coverflow.height - thumbHeight) / 2 + (tier === 0 ? 0 : Core.MenuStyle.menu.wallpaperSideLift)
+                                width: thumbWidth
+                                height: thumbHeight
+                                z: 10 - tier
+                                opacity: valid ? 1 : 0
+                                visible: valid
+
+                                Behavior on x { NumberAnimation { duration: Core.MenuStyle.menuTransition.popupDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve } }
+                                Behavior on y { NumberAnimation { duration: Core.MenuStyle.menuTransition.popupDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve } }
+                                Behavior on width { NumberAnimation { duration: Core.MenuStyle.menuTransition.popupDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve } }
+                                Behavior on height { NumberAnimation { duration: Core.MenuStyle.menuTransition.popupDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve } }
+                                Behavior on opacity { NumberAnimation { duration: Core.MenuStyle.menuTransition.popupDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultSpatialCurve } }
+
+                                Core.SharpShape {
+                                    anchors.fill: parent
+                                    cutBottomLeft: true
+                                    cutBottomRight: true
+                                    cutAmount: Core.MenuStyle.radius
+                                    fillColor: Core.MenuStyle.dockButtonRule.idleSurface
+                                    strokeColor: tier === 0 ? Core.Colors.accent : Core.Colors.border
+                                    strokeWidth: Core.MenuStyle.sharedRadius.border
+
+                                    Image {
                                         anchors.fill: parent
-                                        anchors.margins: 2
-                                        // Keep the absolute thumbnail path
-                                        // intact, including nested directories.
-                                        source: modelData.thumb
+                                        anchors.margins: Core.MenuStyle.sharedRadius.border
+                                        source: slot.wallpaper ? slot.wallpaper.thumb : ""
                                         fillMode: Image.PreserveAspectCrop
-                                        asynchronous: false
+                                        asynchronous: true
                                         cache: true
-                                        sourceSize.width: 244
-                                        sourceSize.height: 132
-                                        visible: true
-                                    }
-                                    Rectangle {
-                                        id: maskShape
-                                        anchors.fill: thumb
-                                        radius: card.radius - 2
-                                        visible: false
-                                    }
-                                    OpacityMask {
-                                        anchors.fill: thumb
-                                        source: thumb
-                                        maskSource: maskShape
+                                        sourceSize.width: 440
+                                        sourceSize.height: 236
                                     }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        onClicked: { wpRoot.selIndex = index; wpRoot.applyWallpaper(modelData.path); }
+                                        onClicked: {
+                                            if (!slot.valid) return;
+                                            if (slot.offset === 0) wpRoot.applyWallpaper(slot.wallpaper.path);
+                                            else wpRoot.currentCenterIndex = slot.wallpaperIndex;
+                                        }
                                     }
                                 }
+                            }
                         }
                     }
                   }

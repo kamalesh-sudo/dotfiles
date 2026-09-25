@@ -389,7 +389,7 @@ Item {
                                             acceptedButtons: Qt.LeftButton
                                             onClicked: {
                                                 expiry.stop()
-                                                Core.AppState.dismissNotification(wrapper.modelData.id)
+                                                Core.AppState.hideNotificationPopup(wrapper.modelData.id)
                                             }
                                         }
                                     }

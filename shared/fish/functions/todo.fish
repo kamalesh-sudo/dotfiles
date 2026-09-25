@@ -34,7 +34,7 @@ function todo --description 'Add a Quickshell sticky-note todo'
         return 2
     end
 
-    set -l helper "$HOME/.config/quickshell/scripts/todo-store.py"
+    set -l helper "$HOME/.config/quickshell/yahpax/scripts/todo-store.py"
     if not command -q python3
         echo 'todo: python3 is required' >&2
         return 1

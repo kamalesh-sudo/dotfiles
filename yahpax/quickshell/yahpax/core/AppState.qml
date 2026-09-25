@@ -194,16 +194,6 @@ QtObject {
         }
     }
 
-    function expireNotificationPopups() {
-        const now = Date.now()
-        const expired = visiblePopups.filter(id => {
-            const item = notifications.find(notification => notification.id === id)
-            return item && item.popup && now - Number(item.createdAt || now) >= 3000
-        })
-        for (const id of expired)
-            expireNotification(id)
-    }
-
     function addNotification(summary, body, urgency) {
         const item = { id: ++notificationSerial, nativeId: 0, native: null,
                        appName: "Quickshell", appIcon: "", summary: String(summary || "Notification"),
@@ -232,7 +222,9 @@ QtObject {
                        resident: Boolean(notification.resident),
                        expireTimeout: Number(notification.expireTimeout),
                        hints: notification.hints || {},
-                       createdAt: Date.now() }
+                       // Preserve arrival-based expiry when a native
+                       // notification updates an existing ID.
+                       createdAt: existing ? existing.createdAt : Date.now() }
         notifications = [item].concat(notifications.filter(old => old.id !== item.id)).slice(0, 50)
         enqueuePopup(item.id)
     }

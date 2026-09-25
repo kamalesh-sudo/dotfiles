@@ -151,9 +151,9 @@ QtObject {
         // bottom content clear of the collapsed trapezoid transition.
         readonly property real heightExtra: 8
         // Maximum width of the fixed bar host.
-        readonly property real hostMaxWidth: 880
+        readonly property real hostMaxWidth: 900
         // Minimum width of the fixed bar host.
-        readonly property real hostMinWidth: 900
+        readonly property real hostMinWidth: 880
         // Extra host height reserved for expanded menu content.
         readonly property real hostHeightExtra: 380
         // Maximum corner-cut radius used by expanded BarMorph surfaces.

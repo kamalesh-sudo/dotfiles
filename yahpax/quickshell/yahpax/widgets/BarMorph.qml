@@ -21,19 +21,19 @@ Item {
     property bool hoverSurfaceEntered: false
     focus: expanded
 
-    function handleSelectorKey(key) {
+    function handleSelectorKey(key, modifiers) {
         if (!expanded || !contentLoader.item) return false;
         if (key === Qt.Key_Escape) {
             Core.AppState.closeMorph();
             return true;
         }
         if (contentLoader.item.handleKey)
-            return contentLoader.item.handleKey(key);
+            return contentLoader.item.handleKey(key, modifiers || Qt.NoModifier);
         return false;
     }
 
     Keys.onPressed: (event) => {
-        if (root.handleSelectorKey(event.key)) event.accepted = true;
+        if (root.handleSelectorKey(event.key, event.modifiers)) event.accepted = true;
     }
 
     onExpandedChanged: {
@@ -212,7 +212,8 @@ Item {
                             width: configuredWorkspaceCount * unit - cellSpacing
                             height: cellHeight
                             readonly property int activeIndex: {
-                                const focusedId = Hyprland.focusedWorkspace?.id ?? 0;
+                                const focusedWorkspace = Hyprland.focusedWorkspace;
+                                const focusedId = focusedWorkspace ? focusedWorkspace.id : 0;
                                 const index = workspaceList.findIndex(w => w.id === focusedId);
                                 return index >= 0 ? index : 0;
                             }
@@ -563,12 +564,41 @@ Item {
                 Item {
                     id: chRoot
                     anchors.fill: parent
-                    property var items: []
+                    property var items: Core.ClipboardService.history
                     property int selIndex: -1
                     focus: true
-                    Component.onCompleted: forceActiveFocus()
+                    Component.onCompleted: {
+                        forceActiveFocus();
+                    }
+
+                    function selectedItem() {
+                        return selIndex >= 0 && selIndex < items.length ? items[selIndex] : "";
+                    }
+
+                    function restoreItem(item, closeAfter) {
+                        if (!item || String(item).length === 0) return false;
+                        Quickshell.execDetached(["fish",
+                            Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
+                            item]);
+                        if (closeAfter) Core.AppState.closeMorph();
+                        return true;
+                    }
+
+                    // Copy puts the selected history entry back in the Wayland
+                    // clipboard without closing the menu. Paste uses the same
+                    // safe restore path, then closes the selector.
+                    function copySelected() {
+                        return restoreItem(selectedItem(), false);
+                    }
+
+                    function pasteSelected() {
+                        return restoreItem(selectedItem(), true);
+                    }
+
                     function clampSelection() {
-                        selIndex = items.length > 0 ? Math.max(0, Math.min(items.length - 1, selIndex)) : -1;
+                        selIndex = items.length > 0
+                            ? Math.max(0, Math.min(items.length - 1, selIndex < 0 ? 0 : selIndex))
+                            : -1;
                     }
 
                     function moveSelection(delta) {
@@ -578,9 +608,21 @@ Item {
                         chList.positionViewAtIndex(selIndex, ListView.Contain);
                     }
 
-                    function handleKey(key) {
+                    function handleKey(key, modifiers) {
+                        const hasControl = (modifiers & Qt.ControlModifier) !== 0;
+                        if (hasControl && key === Qt.Key_C) return copySelected();
+                        if (hasControl && key === Qt.Key_V) return pasteSelected();
+                        if (key === Qt.Key_Return || key === Qt.Key_Enter) {
+                            restoreItem(selectedItem(), true);
+                            return true;
+                        }
+                        if (key === Qt.Key_Escape) {
+                            Core.AppState.closeMorph();
+                            return true;
+                        }
                         if (key === Qt.Key_Up) moveSelection(-1);
                         else if (key === Qt.Key_Down) moveSelection(1);
+                        else if (key === Qt.Key_Left || key === Qt.Key_Right) return true;
                         else if (key === Qt.Key_Home) {
                             selIndex = items.length > 0 ? 0 : -1;
                             if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.Beginning);
@@ -593,47 +635,7 @@ Item {
 
                     onItemsChanged: clampSelection()
                     Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Up) {
-                            moveSelection(-1);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Down) {
-                            moveSelection(1);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
-                            // Clipboard entries are currently a one-column list.
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Home) {
-                            selIndex = items.length > 0 ? 0 : -1;
-                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.Beginning);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_End) {
-                            selIndex = items.length - 1;
-                            if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.End);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (selIndex >= 0 && selIndex < items.length) {
-                                Quickshell.execDetached(["fish",
-                                    Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
-                                    items[selIndex]]);
-                                Core.AppState.closeMorph();
-                            }
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Escape) {
-                            Core.AppState.closeMorph();
-                            event.accepted = true;
-                        }
-                    }
-
-                    Process {
-                        id: chLister
-                        command: ["cliphist", "list"]
-                        running: true
-                        stdout: StdioCollector {
-                            onStreamFinished: {
-                                chRoot.items = this.text.split("\n")
-                                    .filter(l => l.trim().length > 0).slice(0, 60);
-                            }
-                        }
+                        if (handleKey(event.key, event.modifiers)) event.accepted = true;
                     }
 
                     Column {
@@ -685,10 +687,8 @@ Item {
                                 if (index >= 0 && index < chRoot.items.length) chRoot.selIndex = index;
                             }
                                     onClicked: {
-                                        Quickshell.execDetached(["fish",
-                                    Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
-                                            modelData]);
-                                        Core.AppState.closeMorph();
+                                        chRoot.selIndex = index;
+                                        chRoot.restoreItem(modelData, true);
                                     }
                                 }
                             }

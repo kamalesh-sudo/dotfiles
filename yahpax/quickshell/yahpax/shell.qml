@@ -5,6 +5,10 @@ import "core" as Core
 import "widgets"
 
 ShellRoot {
+    // Start the single clipboard backend with the shell, not only after the
+    // Clipboard Menu is opened.
+    Component.onCompleted: Core.ClipboardService.start()
+
     GlobalShellLayer {}
     WallpaperSelector {}
     ClipboardHistory {}

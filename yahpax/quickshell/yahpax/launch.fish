@@ -27,17 +27,4 @@ if test -x "$SCRIPT_DIR/scripts/restore-wallpaper.fish"
     "$SCRIPT_DIR/scripts/restore-wallpaper.fish" &
 end
 
-if type -q wl-paste; and type -q cliphist
-    pgrep -f '[w]l-paste --type text --watch cliphist store' >/dev/null 2>&1; or \
-        begin
-            wl-paste --type text --watch cliphist store >/dev/null 2>&1 &
-            printf '%s\n' "$last_pid" > "$RUNTIME_DIR/wl-paste-text.pid"
-        end
-    pgrep -f '[w]l-paste --type image --watch cliphist store' >/dev/null 2>&1; or \
-        begin
-            wl-paste --type image --watch cliphist store >/dev/null 2>&1 &
-            printf '%s\n' "$last_pid" > "$RUNTIME_DIR/wl-paste-image.pid"
-        end
-end
-
 exec qs -p "$SCRIPT_DIR"

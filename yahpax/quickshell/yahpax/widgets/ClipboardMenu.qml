@@ -2,8 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../core" as Core
-// Thin IPC entry point — the actual clipboard UI lives insid
-// toggle` works from a keybind.
+
+// IPC-only bridge, matching Caelestia's separation between the clipboard
+// service and the surface that displays it.
 Item {
     IpcHandler {
         target: "clipboardHistory"
@@ -12,4 +13,3 @@ Item {
         function close(): void { Core.AppState.closeMorph(); }
     }
 }
-

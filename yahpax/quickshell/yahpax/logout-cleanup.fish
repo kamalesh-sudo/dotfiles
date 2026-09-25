@@ -6,8 +6,6 @@ set -l runtime_dir "$HOME/.cache/yahpax/runtime"
 
 for entry in \
     "awww-daemon|awww-daemon.pid" \
-    "wl-paste|wl-paste-text.pid" \
-    "wl-paste|wl-paste-image.pid" \
     "mpvpaper|mpvpaper.pid"
     set -l fields (string split '|' -- "$entry")
     set -l process_name $fields[1]

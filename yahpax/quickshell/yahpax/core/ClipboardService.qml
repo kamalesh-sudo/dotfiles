@@ -1,74 +1,63 @@
 pragma Singleton
 
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
-// Single Yahpax change signal for the existing user cliphist.service. The
-// system service owns storage; these listeners only notify the UI after a
-// clipboard-owner change has had time to commit to cliphist.
+// Single clipboard source of truth. The existing user cliphist.service owns
+// capture and storage; this service exposes structured entries to Yahpax UI.
 QtObject {
     id: root
 
-    property var history: []
-    property bool refreshScheduled: false
+    readonly property bool available: true
+    property var items: []
+    property bool refreshPending: false
 
     property Process historyReader: Process {
         command: ["cliphist", "list"]
+        environment: ({ "XDG_CACHE_HOME": Quickshell.env("HOME") + "/.cache" })
         running: false
         stdout: StdioCollector {
-            onStreamFinished: {
-                root.history = this.text.split("\n")
-                    .filter(line => line.trim().length > 0)
-                    .slice(0, 60);
-            }
+            onStreamFinished: root.updateItems(this.text)
         }
     }
 
-    function start() {
-        textWatcher.running = true;
-        imageWatcher.running = true;
-        refreshHistory();
+    property Timer refreshTimer: Timer {
+        interval: 250
+        repeat: true
+        running: true
+        onTriggered: root.reload()
     }
 
-    function refreshHistory() {
-        if (refreshScheduled) return;
-        refreshScheduled = true;
-        historyReader.running = false;
+    Component.onCompleted: root.reload()
+
+    function updateItems(raw) {
+        const next = [];
+        for (const line of String(raw || "").split("\n")) {
+            const tab = line.indexOf("\t");
+            if (tab <= 0) continue;
+            const id = line.slice(0, tab).trim();
+            const preview = line.slice(tab + 1).trim();
+            if (!/^\d+$/.test(id) || preview.length === 0) continue;
+            next.push({ id: Number(id), preview: preview, isImage: preview === "[Binary data]" });
+        }
+        root.items = next;
+    }
+
+    function reload() {
+        if (refreshPending || historyReader.running) return;
+        refreshPending = true;
         Qt.callLater(function() {
-            refreshScheduled = false;
-            historyReader.running = true;
+            refreshPending = false;
+            if (!historyReader.running) historyReader.running = true;
         });
     }
 
-    property Process textWatcher: Process {
-        command: ["wl-paste", "--type", "text", "--watch", "sh", "-c",
-                  "sleep 0.15; printf 'yahpax-clipboard-changed\\n'"]
-        running: true
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: root.refreshHistory()
-        }
-        onExited: {
-            // Keep the UI listener alive if wl-paste exits during a clipboard
-            // owner transition or compositor reconnect.
-            Qt.callLater(function() {
-                if (!textWatcher.running) textWatcher.running = true;
-            });
-        }
-    }
-
-    property Process imageWatcher: Process {
-        command: ["wl-paste", "--type", "image", "--watch", "sh", "-c",
-                  "sleep 0.15; printf 'yahpax-clipboard-changed\\n'"]
-        running: true
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: root.refreshHistory()
-        }
-        onExited: {
-            Qt.callLater(function() {
-                if (!imageWatcher.running) imageWatcher.running = true;
-            });
-        }
+    function copy(item) {
+        if (!item || item.id === undefined) return false;
+        Quickshell.execDetached(["env",
+            "XDG_CACHE_HOME=" + Quickshell.env("HOME") + "/.cache",
+            "sh", "-c", "cliphist decode " + String(item.id) + " | wl-copy"]);
+        return true;
     }
 }

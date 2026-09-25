@@ -564,7 +564,7 @@ Item {
                 Item {
                     id: chRoot
                     anchors.fill: parent
-                    property var items: Core.ClipboardService.history
+                    property var items: Core.ClipboardService.items
                     property int selIndex: -1
                     focus: true
                     Component.onCompleted: {
@@ -572,27 +572,17 @@ Item {
                     }
 
                     function selectedItem() {
-                        return selIndex >= 0 && selIndex < items.length ? items[selIndex] : "";
+                        return selIndex >= 0 && selIndex < items.length ? items[selIndex] : null;
                     }
 
-                    function restoreItem(item, closeAfter) {
-                        if (!item || String(item).length === 0) return false;
-                        Quickshell.execDetached(["fish",
-                            Quickshell.env("HOME") + "/.config/quickshell/yahpax/scripts/cliphist-restore.fish",
-                            item]);
-                        if (closeAfter) Core.AppState.closeMorph();
-                        return true;
-                    }
-
-                    // Copy puts the selected history entry back in the Wayland
-                    // clipboard without closing the menu. Paste uses the same
-                    // safe restore path, then closes the selector.
                     function copySelected() {
-                        return restoreItem(selectedItem(), false);
+                        return Core.ClipboardService.copy(selectedItem());
                     }
 
                     function pasteSelected() {
-                        return restoreItem(selectedItem(), true);
+                        const copied = Core.ClipboardService.copy(selectedItem());
+                        if (copied) Core.AppState.closeMorph();
+                        return copied;
                     }
 
                     function clampSelection() {
@@ -613,8 +603,7 @@ Item {
                         if (hasControl && key === Qt.Key_C) return copySelected();
                         if (hasControl && key === Qt.Key_V) return pasteSelected();
                         if (key === Qt.Key_Return || key === Qt.Key_Enter) {
-                            restoreItem(selectedItem(), true);
-                            return true;
+                            return pasteSelected();
                         }
                         if (key === Qt.Key_Escape) {
                             Core.AppState.closeMorph();
@@ -672,7 +661,7 @@ Item {
                                     x: Core.MenuStyle.sharedSpacing.paddingLarge
                                     width: parent.width - Core.MenuStyle.sharedSpacing.paddingLarge * 2
                                     elide: Text.ElideRight
-                                    text: modelData.split("\t").slice(1).join(" ")
+                                    text: modelData.preview
                                     color: Core.Colors.textColor
                                     font.family: Core.Colors.fontFamily
                                     font.pixelSize: Core.MenuStyle.menu.clipboardFontSize
@@ -688,7 +677,8 @@ Item {
                             }
                                     onClicked: {
                                         chRoot.selIndex = index;
-                                        chRoot.restoreItem(modelData, true);
+                                        if (Core.ClipboardService.copy(modelData))
+                                            Core.AppState.closeMorph();
                                     }
                                 }
                             }

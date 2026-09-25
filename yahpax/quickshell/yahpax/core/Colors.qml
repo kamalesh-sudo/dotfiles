@@ -108,14 +108,14 @@ QtObject {
     readonly property color widgetHover: blend(widgetBackground, primaryText, panelIsLight ? 0.10 : 0.16)
     // Pressed surface used by buttons and list rows.
     readonly property color widgetPressed: blend(widgetBackground, primaryText, panelIsLight ? 0.16 : 0.23)
-    // Primary readable text used by headings and active labels.
-    readonly property color primaryText: panelIsLight ? Qt.rgba(0.035, 0.04, 0.055, 1) : Qt.rgba(0.96, 0.97, 1, 1)
+    // Primary readable text: true black on light panels, true white on dark panels.
+    readonly property color primaryText: panelIsLight ? "#000000" : "#FFFFFF"
     // Material-style on-surface role used by primary text and icons.
     readonly property color onSurface: primaryText
-    // Secondary text used by summaries and supporting labels.
-    readonly property color secondaryText: blend(panelBackground, primaryText, panelIsLight ? 0.62 : 0.76)
-    // Muted text used by metadata and inactive controls.
-    readonly property color mutedText: blend(panelBackground, primaryText, panelIsLight ? 0.42 : 0.56)
+    // Secondary text: the same binary foreground at reduced opacity.
+    readonly property color secondaryText: Qt.rgba(primaryText.r, primaryText.g, primaryText.b, panelIsLight ? 0.70 : 0.76)
+    // Muted text: the same binary foreground at lower opacity.
+    readonly property color mutedText: Qt.rgba(primaryText.r, primaryText.g, primaryText.b, panelIsLight ? 0.45 : 0.56)
     // Material-style on-surface-variant role used by secondary metadata.
     readonly property color onSurfaceVariant: secondaryText
     // Icon color selected from the effective panel surface.

@@ -169,6 +169,8 @@ QtObject {
         readonly property real revealZoneOffset: -5
         // Width ratio used by the collapsed BarMorph.
         readonly property real collapsedWidthRatio: 0.300
+        // Bottom inset on each side of the collapsed bar trapezoid.
+        readonly property real collapsedTrapezoidInsetRatio: 0.12
         // Maximum collapsed BarMorph width.
         readonly property real collapsedWidthMax: 880
         // Horizontal padding around the bar's icon row.

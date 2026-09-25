@@ -12,6 +12,10 @@ Shape {
     property bool cutBottomLeft: false
     property bool cutBottomRight: true
     property real cutAmount: Core.MenuStyle.radius
+    // When enabled, use only the four straight trapezoid points. This is
+    // used by the collapsed bar; expanded surfaces retain the normal path.
+    property bool trapezoid: false
+    property real trapezoidInset: width * Core.MenuStyle.bar.collapsedTrapezoidInsetRatio
     property color fillColor: "transparent"
     property color strokeColor: "transparent"
     property real strokeWidth: 0
@@ -51,9 +55,10 @@ Shape {
     layer.smooth: true
 
     ShapePath {
-        fillColor: root.fillColor
-        strokeColor: root.strokeColor
-        strokeWidth: root.strokeWidth
+        id: regularPath
+        fillColor: root.trapezoid ? "transparent" : root.fillColor
+        strokeColor: root.trapezoid ? "transparent" : root.strokeColor
+        strokeWidth: root.trapezoid ? 0 : root.strokeWidth
         joinStyle: ShapePath.MiterJoin
         capStyle: ShapePath.FlatCap
 
@@ -66,6 +71,24 @@ Shape {
         PathLine { x: root.pathLeft; y: root.pathBottom - root.pathBottomLeftCut }
         PathLine { x: root.pathLeft; y: root.pathTop + root.pathTopLeftCut }
         PathLine { x: root.pathLeft + root.pathTopLeftCut; y: root.pathTop }
+    }
+
+    // Collapsed bar silhouette: A -> B -> C -> D -> A. There are no
+    // vertical side segments and no independent corner-cut segments.
+    ShapePath {
+        id: trapezoidPath
+        readonly property real inset: Math.min(root.trapezoidInset, root.pathWidth / 2)
+        fillColor: root.trapezoid ? root.fillColor : "transparent"
+        strokeColor: root.trapezoid ? root.strokeColor : "transparent"
+        strokeWidth: root.trapezoid ? root.strokeWidth : 0
+        joinStyle: ShapePath.MiterJoin
+        capStyle: ShapePath.FlatCap
+
+        PathMove { x: root.pathLeft; y: root.pathTop }
+        PathLine { x: root.pathRight; y: root.pathTop }
+        PathLine { x: root.pathRight - trapezoidPath.inset; y: root.pathBottom }
+        PathLine { x: root.pathLeft + trapezoidPath.inset; y: root.pathBottom }
+        PathLine { x: root.pathLeft; y: root.pathTop }
     }
 
     Item {

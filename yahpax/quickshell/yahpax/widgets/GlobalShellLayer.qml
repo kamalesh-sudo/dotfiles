@@ -60,6 +60,9 @@ Variants {
             height: bar.y + bar.inputItem.y + bar.inputItem.height
             visible: bar.contentVisible
             opacity: bar.revealProgress
+            // Collapsed bar only: a four-point tapered trapezoid. Expanded
+            // BarMorph keeps MenuPanel's existing path unchanged.
+            trapezoid: !bar.inputItem.expanded
             // Asymmetric reference silhouette: square top and bottom-left,
             // with matching diagonal cuts on both lower corners.
             surfaceColor: root.globalSurfaceColor

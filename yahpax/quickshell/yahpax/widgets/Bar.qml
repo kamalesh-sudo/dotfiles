@@ -11,6 +11,8 @@ Item {
     property Item inputItem: morph
     property Item revealInput: revealZone
     property real shellJoinRadius: morph.visualRadius
+    // The shell uses this to request keyboard focus only while a selector is open.
+    readonly property bool expanded: morph.expanded
 
         readonly property real barHeight: Core.MenuStyle.bar.baseHeight + Core.MenuStyle.bar.heightExtra
         readonly property real fixedWidth: Math.max(Math.min(Core.MenuStyle.bar.hostMaxWidth, modelData.width * Core.MenuStyle.bar.collapsedWidthRatio), Core.MenuStyle.bar.hostMinWidth)

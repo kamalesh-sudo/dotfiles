@@ -5,9 +5,6 @@ import "core" as Core
 import "widgets"
 
 ShellRoot {
-    // Prime the single clipboard model with the shell.
-    Component.onCompleted: Core.ClipboardService.reload()
-
     GlobalShellLayer {}
     WallpaperSelector {}
     ClipboardMenu {}

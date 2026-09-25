@@ -8,7 +8,7 @@ import Qt5Compat.GraphicalEffects
 import "../core" as Core
 import ".." as Local
 
-Item {
+FocusScope {
     id: root
 
     property var modelData
@@ -21,21 +21,6 @@ Item {
     property bool hoverSurfaceEntered: false
     focus: expanded
 
-    function handleSelectorKey(key, modifiers) {
-        if (!expanded || !contentLoader.item) return false;
-        if (key === Qt.Key_Escape) {
-            Core.AppState.closeMorph();
-            return true;
-        }
-        if (contentLoader.item.handleKey)
-            return contentLoader.item.handleKey(key, modifiers || Qt.NoModifier);
-        return false;
-    }
-
-    Keys.onPressed: (event) => {
-        if (root.handleSelectorKey(event.key, event.modifiers)) event.accepted = true;
-    }
-
     onExpandedChanged: {
         if (!expanded) {
             hoverSurfaceEntered = false
@@ -45,8 +30,8 @@ Item {
             // was opened while another application had focus.
             Qt.callLater(function() {
                 if (!root.expanded) return;
-                if (contentLoader.item && contentLoader.item.forceActiveFocus)
-                    contentLoader.item.forceActiveFocus();
+                if (contentLoader.item && contentLoader.item.claimFocus)
+                    contentLoader.item.claimFocus();
                 else
                     root.forceActiveFocus();
             });
@@ -337,10 +322,10 @@ Item {
             active: root.expanded
             focus: root.expanded
             onLoaded: {
-                if (root.expanded && item && item.forceActiveFocus)
+                if (root.expanded && item && item.claimFocus)
                     Qt.callLater(function() {
                         if (root.expanded && contentLoader.item)
-                            contentLoader.item.forceActiveFocus();
+                            contentLoader.item.claimFocus();
                     });
             }
             sourceComponent: {
@@ -391,24 +376,17 @@ Item {
                         selIndex = apps.length > 0 ? Math.max(0, Math.min(apps.length - 1, selIndex)) : -1;
                     }
 
+                    // Caelestia focuses the launcher search field, because it
+                    // is both the text-entry owner and the arrow-key owner.
+                    function claimFocus() {
+                        laInput.forceActiveFocus();
+                    }
+
                     function moveSelection(delta) {
                         clampSelection();
                         if (apps.length === 0) return;
                         selIndex = Math.max(0, Math.min(apps.length - 1, selIndex + delta));
                         laList.positionViewAtIndex(selIndex, ListView.Contain);
-                    }
-
-                    function handleKey(key) {
-                        if (key === Qt.Key_Up) moveSelection(-1);
-                        else if (key === Qt.Key_Down) moveSelection(1);
-                        else if (key === Qt.Key_Home) {
-                            selIndex = apps.length > 0 ? 0 : -1;
-                            if (selIndex >= 0) laList.positionViewAtIndex(selIndex, ListView.Beginning);
-                        } else if (key === Qt.Key_End) {
-                            selIndex = apps.length - 1;
-                            if (selIndex >= 0) laList.positionViewAtIndex(selIndex, ListView.End);
-                        } else return false;
-                        return true;
                     }
 
                     onQueryChanged: selIndex = apps.length > 0 ? 0 : -1
@@ -559,9 +537,9 @@ Item {
                 }
             }
 
-            Component {
+                Component {
                 id: clipboardContent
-                Item {
+                FocusScope {
                     id: chRoot
                     anchors.fill: parent
                     property var items: Core.ClipboardService.items
@@ -569,6 +547,11 @@ Item {
                     focus: true
                     Component.onCompleted: {
                         forceActiveFocus();
+                    }
+
+                    function claimFocus() {
+                        forceActiveFocus();
+                        clampSelection();
                     }
 
                     function selectedItem() {
@@ -598,33 +581,32 @@ Item {
                         chList.positionViewAtIndex(selIndex, ListView.Contain);
                     }
 
-                    function handleKey(key, modifiers) {
-                        const hasControl = (modifiers & Qt.ControlModifier) !== 0;
-                        if (hasControl && key === Qt.Key_C) return copySelected();
-                        if (hasControl && key === Qt.Key_V) return pasteSelected();
-                        if (key === Qt.Key_Return || key === Qt.Key_Enter) {
-                            return pasteSelected();
-                        }
-                        if (key === Qt.Key_Escape) {
-                            Core.AppState.closeMorph();
-                            return true;
-                        }
-                        if (key === Qt.Key_Up) moveSelection(-1);
-                        else if (key === Qt.Key_Down) moveSelection(1);
-                        else if (key === Qt.Key_Left || key === Qt.Key_Right) return true;
-                        else if (key === Qt.Key_Home) {
+                    onItemsChanged: clampSelection()
+                    Keys.onUpPressed: moveSelection(-1)
+                    Keys.onDownPressed: moveSelection(1)
+                    Keys.onLeftPressed: event => { event.accepted = true; }
+                    Keys.onRightPressed: event => { event.accepted = true; }
+                    Keys.onEscapePressed: Core.AppState.closeMorph()
+                    Keys.onPressed: event => {
+                        const hasControl = (event.modifiers & Qt.ControlModifier) !== 0;
+                        if (event.key === Qt.Key_Home) {
                             selIndex = items.length > 0 ? 0 : -1;
                             if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.Beginning);
-                        } else if (key === Qt.Key_End) {
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_End) {
                             selIndex = items.length - 1;
                             if (selIndex >= 0) chList.positionViewAtIndex(selIndex, ListView.End);
-                        } else return false;
-                        return true;
-                    }
-
-                    onItemsChanged: clampSelection()
-                    Keys.onPressed: (event) => {
-                        if (handleKey(event.key, event.modifiers)) event.accepted = true;
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            pasteSelected();
+                            event.accepted = true;
+                        } else if (hasControl && event.key === Qt.Key_C) {
+                            copySelected();
+                            event.accepted = true;
+                        } else if (hasControl && event.key === Qt.Key_V) {
+                            pasteSelected();
+                            event.accepted = true;
+                        }
                     }
 
                     Column {
@@ -688,9 +670,9 @@ Item {
             }
             
 
-            Component {
+                Component {
                 id: wallpaperContent
-                Item {
+                FocusScope {
                     id: wpRoot
                     anchors.fill: parent
                     focus: true
@@ -703,6 +685,10 @@ Item {
                     Component.onCompleted: {
                         forceActiveFocus();
                         currentWallpaperReader.running = true;
+                    }
+
+                    function claimFocus() {
+                        forceActiveFocus();
                     }
 
                     function clampCenter() {
@@ -720,17 +706,6 @@ Item {
                         currentCenterIndex = found >= 0 ? found : 0;
                     }
 
-                    function handleKey(key) {
-                        if (key === Qt.Key_Left) moveCenter(-1);
-                        else if (key === Qt.Key_Right) moveCenter(1);
-                        else if (key === Qt.Key_Home) {
-                            currentCenterIndex = items.length > 0 ? 0 : -1;
-                        } else if (key === Qt.Key_End) {
-                            currentCenterIndex = items.length - 1;
-                        } else return false;
-                        return true;
-                    }
-
                     function moveCenter(delta) {
                         if (items.length === 0) {
                             currentCenterIndex = -1;
@@ -740,17 +715,13 @@ Item {
                             currentCenterIndex + delta));
                     }
 
-                    Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
-                            moveCenter(1);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_H) {
-                            moveCenter(-1);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Down) {
-                            // The coverflow is a single horizontal row.
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Home) {
+                    Keys.onLeftPressed: moveCenter(-1)
+                    Keys.onRightPressed: moveCenter(1)
+                    Keys.onUpPressed: event => { event.accepted = true; }
+                    Keys.onDownPressed: event => { event.accepted = true; }
+                    Keys.onEscapePressed: Core.AppState.closeMorph()
+                    Keys.onPressed: event => {
+                        if (event.key === Qt.Key_Home) {
                             currentCenterIndex = items.length > 0 ? 0 : -1;
                             event.accepted = true;
                         } else if (event.key === Qt.Key_End) {
@@ -758,10 +729,7 @@ Item {
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                             if (currentCenterIndex >= 0 && currentCenterIndex < items.length)
-                                wpRoot.applyWallpaper(items[currentCenterIndex].path);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Escape) {
-                            Core.AppState.closeMorph();
+                                applyWallpaper(items[currentCenterIndex].path);
                             event.accepted = true;
                         }
                     }

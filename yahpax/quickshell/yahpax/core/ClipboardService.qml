@@ -9,7 +9,6 @@ import Quickshell.Io
 QtObject {
     id: root
 
-    readonly property bool available: true
     property var items: []
     property bool refreshPending: false
 

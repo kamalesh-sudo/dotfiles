@@ -145,8 +145,9 @@ QtObject {
 
     // Main bar dimensions and reveal geometry.
     readonly property QtObject bar: QtObject {
-        // Extra pixels added below the palette-defined bar height.
-        readonly property real heightExtra: 3
+        // Extra lower height below the palette-defined bar row, keeping
+        // bottom content clear of the collapsed trapezoid transition.
+        readonly property real heightExtra: 8
         // Maximum width of the fixed bar host.
         readonly property real hostMaxWidth: 880
         // Minimum width of the fixed bar host.

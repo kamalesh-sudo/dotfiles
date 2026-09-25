@@ -9,7 +9,7 @@ Item {
     property Item inputItem: inputRegion
 
         readonly property int buttonWidth: Core.MenuStyle.bar.actionWidth
-        readonly property int buttonHeight: Core.Colors.barHeight - Core.MenuStyle.bar.actionHeightOffset
+        readonly property int buttonHeight: Core.MenuStyle.bar.baseHeight - Core.MenuStyle.bar.actionHeightOffset
         readonly property int buttonSpacing: Core.MenuStyle.sharedSpacing.small
         readonly property int groupWidth: buttonWidth * 4 + buttonSpacing * 3
         readonly property real barWidth: Math.min(Core.MenuStyle.bar.collapsedWidthMax, modelData.width * Core.MenuStyle.bar.collapsedWidthRatio)
@@ -76,7 +76,7 @@ Item {
                     // Power actions use the same active surface as the bar's
                     // Power toggle; only the glyph differs.
                     fillColor: Core.MenuStyle.toggleRule.onSurface
-                    strokeColor: Core.Colors.border
+                    strokeColor: Core.Colors.borderColor
                     strokeWidth: Core.MenuStyle.sharedRadius.border
 
                     Text {

@@ -12,7 +12,7 @@ Item {
     property Item revealInput: revealZone
     property real shellJoinRadius: morph.visualRadius
 
-        readonly property real barHeight: Core.Colors.barHeight + Core.MenuStyle.bar.heightExtra
+        readonly property real barHeight: Core.MenuStyle.bar.baseHeight + Core.MenuStyle.bar.heightExtra
         readonly property real fixedWidth: Math.max(Math.min(Core.MenuStyle.bar.hostMaxWidth, modelData.width * Core.MenuStyle.bar.collapsedWidthRatio), Core.MenuStyle.bar.hostMinWidth)
         readonly property real fixedHeight: barHeight + Core.MenuStyle.bar.hostHeightExtra
         readonly property bool focusedFullscreen: ToplevelManager.activeToplevel?.fullscreen === true

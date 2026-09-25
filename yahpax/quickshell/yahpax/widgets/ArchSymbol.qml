@@ -37,9 +37,9 @@ Item {
                     fillColor: "transparent"
 
                     strokeColor: Qt.rgba(
-                        Core.Colors.accent.r,
-                        Core.Colors.accent.g,
-                        Core.Colors.accent.b,
+                        Core.Colors.borderColor.r,
+                        Core.Colors.borderColor.g,
+                        Core.Colors.borderColor.b,
                         0.20
                     )
 
@@ -143,13 +143,13 @@ Item {
 
                 ShapePath {
                     fillColor: Qt.rgba(
-                        Core.Colors.accent.r,
-                        Core.Colors.accent.g,
-                        Core.Colors.accent.b,
+                        Core.Colors.borderColor.r,
+                        Core.Colors.borderColor.g,
+                        Core.Colors.borderColor.b,
                         0.025
                     )
 
-                    strokeColor: Core.Colors.accent
+                    strokeColor: Core.Colors.borderColor
 
                     strokeWidth: 1.7
 
@@ -283,7 +283,7 @@ Item {
                 width: 120
                 height: 1
 
-                color: Core.Colors.accent
+                color: Core.Colors.iconColor
 
                 opacity: 0.0
 
@@ -333,7 +333,7 @@ Item {
 
                 radius: 3
 
-                color: Core.Colors.accent
+                color: Core.Colors.iconColor
 
                 SequentialAnimation on opacity {
                     loops: Animation.Infinite
@@ -405,7 +405,7 @@ Item {
 
                     color: index === 1
                         ? Core.Colors.accent2
-                        : Core.Colors.accent
+                        : Core.Colors.borderColor
 
                     x: [
                         23,

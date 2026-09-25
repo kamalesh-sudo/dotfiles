@@ -1,4 +1,5 @@
 import QtQuick
+import "../core" as Core
 
 QtObject {
 
@@ -8,18 +9,18 @@ QtObject {
 
     readonly property string position: "bottom"
     readonly property string alignment: "center"
-    readonly property int margin: 0
+    readonly property int margin: Core.MenuStyle.audio.margin
 
 
     // ============================================================
     // SIZE
     // ============================================================
 
-    readonly property int visualizerWidth: 550
-    readonly property int visualizerHeight: 200
+    readonly property int visualizerWidth: Core.MenuStyle.audio.width
+    readonly property int visualizerHeight: Core.MenuStyle.audio.height
 
-    readonly property real maximumHeight: 45
-    readonly property real minimumHeight: 0
+    readonly property real maximumHeight: Core.MenuStyle.audio.maximumHeight
+    readonly property real minimumHeight: Core.MenuStyle.audio.minimumHeight
 
 
     // ============================================================

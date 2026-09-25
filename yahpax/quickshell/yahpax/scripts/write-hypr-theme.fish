@@ -32,21 +32,12 @@ package.preload[\"colors-wal.lua\"] = function() return require(\"colors-wal\") 
 
 hl.config({
     general = {
-        border_size = 1,
         col = {
             active_border = \"rgba($active""ff)\",
             inactive_border = \"rgba($inactive""aa)\",
         },
     },
-    decoration = { rounding = 12 },
-    animations = { enabled = false },
 })
-
-pcall(function()
-  hl.config({ decoration = { blur = { enabled = true, size = 8, passes = 4, vibrancy = 0.3 } } })
-  -- Keep blur scoped to Yahpax surfaces that intentionally use translucency.
-  hl.layer_rule({ match = { namespace = \"quickshell-bar\" }, blur = true, ignore_alpha = 0.08 })
-end)
 " > "$out"
 
 hyprctl reload >/dev/null 2>&1; or true

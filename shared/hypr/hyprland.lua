@@ -94,7 +94,7 @@ hl.config({
         gaps_in  = 2,
         gaps_out = 2,
 
-        border_size = 5,
+        border_size = 2,
 
         col = {
             active_border   = "rgba(33ccffee)",
@@ -123,9 +123,9 @@ hl.config({
 
         blur = {
             enabled   = true,
-          size      = 3,
-          passes    = 1,
-          vibrancy  = 0.1696,
+          size      = 8,
+          passes    = 4,
+          vibrancy  = 0.3,
         },
     },
 

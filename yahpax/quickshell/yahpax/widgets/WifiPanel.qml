@@ -71,51 +71,51 @@ Item {
             Text {
                 Layout.fillWidth: true
                 text: root.view === "default" ? "WIFI" : root.view.toUpperCase()
-                color: Core.Colors.foreground
+                color: Core.Colors.textColor
                 font.family: Core.Colors.fontFamily
                 font.weight: Core.Colors.titleWeight
             }
             Text {
                 visible: root.view !== "default"
                 text: "BACK"
-                color: Core.Colors.accent
+                color: Core.Colors.iconColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
                 MouseArea { anchors.fill: parent; onClicked: root.view = "default" }
             }
         }
 
         Rectangle {
             Layout.fillWidth: true
-            height: 1
-            color: Core.Colors.accent
-            opacity: 0.35
+            height: Core.MenuStyle.connectivity.separatorHeight
+            color: Core.Colors.iconColor
+            opacity: Core.MenuStyle.connectivity.separatorOpacity
         }
 
-        Rectangle {
+        Core.SharpShape {
             visible: root.view === "default" && Local.WifiService.connected !== null
             Layout.fillWidth: true
-            height: 38
-            radius: Core.MenuStyle.sharedRadius.card
-            color: Core.MenuStyle.activeRule.surface
-            border.width: Core.MenuStyle.sharedRadius.border
-            border.color: Core.Colors.accent
+            cutBottomRight: false
+            height: Core.MenuStyle.connectivity.connectedCardHeight
+            fillColor: Core.MenuStyle.dockButtonRule.activeSurface
+            strokeWidth: Core.MenuStyle.sharedRadius.border
+            strokeColor: Core.Colors.borderColor
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 9
+                    anchors.margins: Core.MenuStyle.sharedSpacing.small
                 Text {
                     Layout.fillWidth: true
                     text: Local.WifiService.connected ? "●  " + Local.WifiService.connected.name : ""
-                    color: Core.Colors.foreground
+                    color: Core.Colors.textColor
                     font.family: Core.Colors.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
                     elide: Text.ElideRight
                 }
                 Text {
                     text: "DETAILS"
-                    color: Core.Colors.muted
+                    color: Core.Colors.mutedText
                     font.family: Core.Colors.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
@@ -143,15 +143,15 @@ Item {
                     return root.availableNetworks.slice(0, 4);
                 return root.availableNetworks;
             }
-            delegate: Rectangle {
+            delegate: Core.SharpShape {
                 required property var modelData
+                cutBottomRight: false
                 width: networkList.width
-                height: 34
-                radius: Core.MenuStyle.sharedRadius.card
-                color: networkMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : Core.MenuStyle.inactiveRule.surface
-                border.width: Core.MenuStyle.sharedRadius.border
-                border.color: modelData.connected ? Core.Colors.accent : Core.Colors.muted
-                Behavior on color {
+                height: Core.MenuStyle.connectivity.networkRowHeight
+                fillColor: networkMouse.containsMouse ? Core.MenuStyle.dockButtonRule.activeSurface : Core.MenuStyle.dockButtonRule.idleSurface
+                strokeWidth: Core.MenuStyle.sharedRadius.border
+                strokeColor: modelData.connected ? Core.Colors.borderColor : Core.Colors.mutedText
+                Behavior on fillColor {
                     ColorAnimation {
                         duration: Core.MenuStyle.hoverRule.duration
                         easing.type: Core.MenuStyle.bezierSplineType
@@ -160,27 +160,27 @@ Item {
                 }
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
+                    anchors.leftMargin: Core.MenuStyle.sharedSpacing.medium
+                    anchors.rightMargin: Core.MenuStyle.sharedSpacing.medium
                     Text {
                         Layout.fillWidth: true
                         text: modelData.name
-                        color: Core.Colors.foreground
+                        color: Core.Colors.textColor
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
                         elide: Text.ElideRight
                     }
                     Text {
                         text: modelData.connected ? "CONNECTED" : modelData.known ? "SAVED" : ""
-                        color: modelData.connected ? Core.Colors.accent : Core.Colors.muted
+                        color: modelData.connected ? Core.Colors.iconColor : Core.Colors.mutedText
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                     }
                     Text {
                         text: WifiSecurityType.toString(modelData.security)
-                        color: Core.Colors.muted
+                        color: Core.Colors.mutedText
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                     }
                 }
                 MouseArea {
@@ -200,37 +200,37 @@ Item {
             Text {
                 Layout.fillWidth: true
                 text: root.view === "connected" ? (root.selectedNetwork ? root.selectedNetwork.name : "CONNECTED") : "CONNECT TO " + (root.selectedNetwork ? root.selectedNetwork.name : "NETWORK")
-                color: Core.Colors.foreground
+                color: Core.Colors.textColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Core.MenuStyle.connectivity.headingFontSize
                 elide: Text.ElideRight
             }
             Text {
                 visible: root.view === "connected"
                 text: root.selectedNetwork ? "Connected\nSignal: " + Math.round(root.selectedNetwork.signalStrength * 100) + "%" : ""
-                color: Core.Colors.muted
+                color: Core.Colors.mutedText
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
             }
             TextInput {
                 id: passwordInput
                 visible: root.view === "password"
                 Layout.fillWidth: true
-                height: 32
+                height: Core.MenuStyle.connectivity.passwordHeight
                 echoMode: TextInput.Password
-                color: Core.Colors.foreground
+                color: Core.Colors.textColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Core.MenuStyle.connectivity.passwordFontSize
                 onTextChanged: root.password = text
                 onAccepted: root.submitPassword()
-                Rectangle {
+                Core.SharpShape {
                     anchors.fill: parent
                     z: -1
-                    radius: Core.MenuStyle.sharedRadius.card
-                    color: Core.MenuStyle.sharedSurface.notification
-                    border.width: Core.MenuStyle.sharedRadius.border
-                    border.color: Core.Colors.accent
-                    Behavior on color {
+                    cutBottomRight: false
+                    fillColor: Core.MenuStyle.sharedSurface.notification
+                    strokeWidth: Core.MenuStyle.sharedRadius.border
+                    strokeColor: Core.Colors.borderColor
+                    Behavior on fillColor {
                         ColorAnimation {
                             duration: Core.MenuStyle.pressedRule.duration
                             easing.type: Core.MenuStyle.bezierSplineType
@@ -242,23 +242,23 @@ Item {
             Text {
                 visible: root.errorText.length > 0 || Local.WifiService.errorText.length > 0
                 text: root.errorText || Local.WifiService.errorText
-                color: Core.Colors.accent
+                color: Core.Colors.iconColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
             }
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: Core.MenuStyle.sharedSpacing.small
-                Rectangle {
-                    width: 88
-                    height: 28
-                    radius: Core.MenuStyle.sharedRadius.card
-                    color: wifiActionMouse.pressed
+                Core.SharpShape {
+                    width: Core.MenuStyle.connectivity.actionWidth
+                    height: Core.MenuStyle.connectivity.actionHeight
+                    cutBottomRight: false
+                    fillColor: wifiActionMouse.pressed
                            ? Core.MenuStyle.pressedRule.accentSurface
-                           : wifiActionMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : "transparent"
-                    border.width: Core.MenuStyle.sharedRadius.border
-                    border.color: Core.Colors.accent
-                    Behavior on color {
+                           : wifiActionMouse.containsMouse ? Core.MenuStyle.dockButtonRule.activeSurface : "transparent"
+                    strokeWidth: Core.MenuStyle.sharedRadius.border
+                    strokeColor: Core.Colors.borderColor
+                    Behavior on fillColor {
                         ColorAnimation {
                             duration: Core.MenuStyle.hoverRule.duration
                             easing.type: Core.MenuStyle.bezierSplineType
@@ -268,9 +268,9 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: root.view === "connected" ? "DISCONNECT" : "CONNECT"
-                        color: Core.Colors.accent
+                        color: Core.Colors.iconColor
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                     }
                     MouseArea {
                         id: wifiActionMouse
@@ -299,20 +299,20 @@ Item {
                     { label: "ALL", action: "all" },
                     { label: "SAVED", action: "saved" }
                 ]
-                delegate: Rectangle {
+                delegate: Core.SharpShape {
                     required property var modelData
-                    width: modelData.action === "refresh" ? 32 : 60
-                    height: 26
-                    radius: Core.MenuStyle.sharedRadius.card
-                    color: actionMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : "transparent"
-                    border.width: Core.MenuStyle.sharedRadius.border
-                    border.color: Core.Colors.accent
+                    cutBottomRight: false
+                    width: modelData.action === "refresh" ? Core.MenuStyle.connectivity.refreshWidth : Core.MenuStyle.connectivity.filterWidth
+                    height: Core.MenuStyle.connectivity.filterHeight
+                    fillColor: actionMouse.containsMouse ? Core.MenuStyle.dockButtonRule.activeSurface : "transparent"
+                    strokeWidth: Core.MenuStyle.sharedRadius.border
+                    strokeColor: Core.Colors.borderColor
                     Text {
                         anchors.centerIn: parent
                         text: modelData.label
-                        color: Core.Colors.accent
+                        color: Core.Colors.iconColor
                         font.family: Core.Colors.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                     }
                     MouseArea {
                         id: actionMouse

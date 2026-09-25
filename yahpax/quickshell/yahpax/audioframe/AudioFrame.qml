@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../core" as Core
 import Quickshell
 import Quickshell.Io
 import "../core" as Core
@@ -136,7 +137,7 @@ Item {
 
         id: restartTimer
 
-        interval: 1000
+        interval: Core.MenuStyle.audio.refreshInterval
 
         onTriggered: {
 

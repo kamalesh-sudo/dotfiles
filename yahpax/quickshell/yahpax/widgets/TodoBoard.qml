@@ -85,30 +85,30 @@ Item {
                         cutBottomLeft: true
                         cutBottomRight: true
                         cutAmount: Core.MenuStyle.radius
-                        fillColor: entry.hovered ? Core.Colors.widgetHover : Core.Colors.widgetBackground
-                        strokeWidth: 1
+                        fillColor: entry.hovered ? Core.Colors.fillActive : Core.Colors.fillInactive
+                        strokeWidth: Core.MenuStyle.layout.todo.borderWidth
                         strokeColor: entry.hovered
-                            ? Core.Colors.accent
-                            : Core.Colors.separator
+                            ? Core.Colors.borderColor
+                            : Core.Colors.borderColor
                         transform: Matrix4x4 {
-                            matrix: Qt.matrix4x4(1, 0.28, 0, -8,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
+                            matrix: Qt.matrix4x4(1, Core.MenuStyle.layout.todo.shearFactor, 0, Core.MenuStyle.layout.todo.transformOffset,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
                         }
                         Behavior on fillColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
                         Behavior on strokeColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
 
                         Rectangle {
                             anchors { top: parent.top; left: parent.left; right: parent.right }
-                            height: 1
+                            height: Core.MenuStyle.layout.todo.topStripeHeight
                             color: Core.Colors.separatorOverlay
                         }
                         Rectangle {
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                            height: 2
-                            color: Core.Colors.accent
+                            height: Core.MenuStyle.layout.todo.bottomStripeHeight
+                            color: Core.Colors.iconColor
                             SequentialAnimation on opacity {
                                 loops: Animation.Infinite
-                                NumberAnimation { to: 1.0; duration: 1100; easing.type: Easing.InOutSine }
-                                NumberAnimation { to: 0.35; duration: 1100; easing.type: Easing.InOutSine }
+                                NumberAnimation { to: 1.0; duration: Core.MenuStyle.layout.todo.pulseDuration; easing.type: Easing.InOutSine }
+                                NumberAnimation { to: Core.MenuStyle.layout.todo.pulseMinimumOpacity; duration: Core.MenuStyle.layout.todo.pulseDuration; easing.type: Easing.InOutSine }
                             }
                         }
                     }
@@ -125,7 +125,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             Text {
                                 text: modelData.text
-                                color: entry.hovered ? Core.Colors.accent : Core.Colors.foreground
+                                color: entry.hovered ? Core.Colors.iconColor : Core.Colors.textColor
                                 font.pixelSize: Core.MenuStyle.layout.todo.titleFontSize
                                 font.bold: entry.hovered
                                 font.family: Core.Colors.fontFamily
@@ -135,30 +135,34 @@ Item {
                             }
                             Text {
                                 text: "slot " + modelData.id
-                                color: Core.Colors.muted
+                                color: Core.Colors.mutedText
                                 font.pixelSize: Core.MenuStyle.layout.todo.metadataFontSize
                                 font.family: Core.Colors.fontFamily
                             }
                         }
                     }
 
-                    Rectangle {
+                    Core.SharpShape {
                         id: check
                         z: 1
                         width: Core.MenuStyle.layout.todo.completeButtonSize
                         height: Core.MenuStyle.layout.todo.completeButtonSize
                         anchors.right: parent.right
-                        anchors.rightMargin: 16
+                        anchors.rightMargin: Core.MenuStyle.layout.todo.completeButtonRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                            color: entry.hovered ? Core.Colors.accentSoftSurface : Core.Colors.accentFaintSurface
-                        border.width: 1
-                        border.color: Core.Colors.accent
-                        Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                        cutTopLeft: false
+                        cutTopRight: false
+                        cutBottomLeft: false
+                        cutBottomRight: false
+                        fillColor: entry.hovered ? Core.Colors.fillActive : Core.Colors.fillInactive
+                        strokeWidth: Core.MenuStyle.sharedRadius.border
+                        strokeColor: Core.Colors.borderColor
+                        Behavior on fillColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
 
                         Text {
                             anchors.centerIn: parent
                             text: "✓"
-                            color: Core.Colors.accent
+                            color: Core.Colors.iconColor
                             font.pixelSize: Core.MenuStyle.layout.todo.completeFontSize
                         }
 

@@ -13,7 +13,7 @@ Item {
 
     property var modelData
     property real normalWidth: Core.MenuStyle.bar.collapsedWidthMax * Core.MenuStyle.bar.collapsedWidthRatio
-    property real normalHeight: Core.Colors.barHeight + Core.MenuStyle.bar.heightExtra
+    property real normalHeight: Core.MenuStyle.bar.baseHeight + Core.MenuStyle.bar.heightExtra
     property var enabledModes: ["launcher", "clipboard", "bluetooth", "wifi", "wallpaper"]
     readonly property bool onThisScreen: Core.AppState.morphScreenName === (modelData ? modelData.name : "")
     readonly property bool expanded: enabledModes.indexOf(Core.AppState.barMorph) >= 0
@@ -196,11 +196,11 @@ Item {
                         Item {
                             id: workspaces
                             anchors.verticalCenter: parent.verticalCenter
-                            readonly property int cellWidth: 26
-                            readonly property int cellHeight: 22
-                            readonly property int cellSpacing: 2
+                            readonly property int cellWidth: Core.MenuStyle.bar.workspaceCellWidth
+                            readonly property int cellHeight: Core.MenuStyle.bar.workspaceCellHeight
+                            readonly property int cellSpacing: Core.MenuStyle.bar.workspaceSpacing
                             readonly property int unit: cellWidth + cellSpacing
-                            readonly property int configuredWorkspaceCount: 5
+                            readonly property int configuredWorkspaceCount: Core.MenuStyle.bar.workspaceCount
                             readonly property var workspaceList: {
                                 const current = Hyprland.workspaces.values || [];
                                 return Array.from({ length: configuredWorkspaceCount }, (_, i) => {
@@ -231,26 +231,26 @@ Item {
                             }
                             Rectangle {
                                 x: workspaces.blobX
-                                width: workspaces.cellWidth
-                                height: Local.Colors.barHeight - 17
+                            width: Core.MenuStyle.bar.workspaceCellWidth
+                                height: Core.MenuStyle.bar.baseHeight - Core.MenuStyle.bar.workspaceHeightOffset
                                 radius: height / 2
                                 // Keep the active workspace marker exactly
                                 // matched to its own dynamic border color.
                                 color: Core.MenuStyle.dockButtonRule.activeSurface
                                 border.width: Core.MenuStyle.sharedRadius.border
-                                border.color: Core.Colors.accent
+                                border.color: Core.Colors.borderColor
                             }
                             Row {
-                                spacing: workspaces.cellSpacing
+                                spacing: Core.MenuStyle.bar.workspaceSpacing
                                 Repeater {
                                     model: workspaces.workspaceList
                                     Item {
-                                        width: workspaces.cellWidth
-                                        height: workspaces.cellHeight
+                                        width: Core.MenuStyle.bar.workspaceCellWidth
+                                        height: Core.MenuStyle.bar.workspaceCellHeight
                                         readonly property int workspaceNumber: modelData.id
                                         readonly property bool isActive: index === workspaces.activeIndex
                                         readonly property bool isOccupied: modelData.occupied
-                                        Text { anchors.centerIn: parent; text: workspaceNumber; font.family: Local.Colors.fontFamily; font.pixelSize: 12; font.weight: isActive ? Font.Bold : Local.Colors.bodyWeight; color: Local.Colors.icon; opacity: isActive ? 1.0 : (isOccupied ? 0.85 : 0.35) }
+                                        Text { anchors.centerIn: parent; text: workspaceNumber; font.family: Local.Colors.fontFamily; font.pixelSize: Core.MenuStyle.bar.workspaceFontSize; font.weight: isActive ? Font.Bold : Local.Colors.bodyWeight; color: Local.Colors.icon; opacity: isActive ? Core.MenuStyle.bar.workspaceActiveOpacity : (isOccupied ? Core.MenuStyle.bar.workspaceOccupiedOpacity : Core.MenuStyle.bar.workspaceEmptyOpacity) }
                                         MouseArea { anchors.fill: parent; onClicked: Hyprland.dispatch("workspace " + workspaceNumber) }
                                     }
                                 }
@@ -266,11 +266,11 @@ Item {
                             anchors.centerIn: parent
                             color: Local.Colors.secondaryText
                             font.family: Local.Colors.fontFamily
-                            font.pixelSize: 13
+                            font.pixelSize: Core.MenuStyle.bar.clockFontSize
                             font.weight: Local.Colors.labelWeight
                             property string currentTime: Qt.formatDateTime(new Date(), "h:mm AP")
                             text: currentTime
-                            Timer { interval: 1000 * 15; running: true; repeat: true; onTriggered: clockCenter.currentTime = Qt.formatDateTime(new Date(), "h:mm AP") }
+                            Timer { interval: Core.MenuStyle.bar.clockRefreshInterval; running: true; repeat: true; onTriggered: clockCenter.currentTime = Qt.formatDateTime(new Date(), "h:mm AP") }
                         }
                     }
 
@@ -288,11 +288,11 @@ Item {
                                     { glyph: "\uf011", morph: "power" }
                                 ]
                                 Rectangle {
-                                    width: 30
-                                    height: Local.Colors.barHeight - 10
+                                    width: Core.MenuStyle.bar.actionWidth
+                                    height: Core.MenuStyle.bar.baseHeight - Core.MenuStyle.bar.actionHeightOffset
                                     radius: height / 2
                                     border.width: Core.MenuStyle.sharedRadius.border
-                                    border.color: Core.Colors.accent
+                                    border.color: Core.Colors.borderColor
                                     color: barIconMouse.pressed
                                            ? Core.MenuStyle.dockButtonRule.pressedSurface
                                            : (barIconMouse.containsMouse
@@ -307,7 +307,7 @@ Item {
                                             easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastEffectsCurve
                                         }
                                     }
-                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: Local.Colors.iconFontFamily; font.pixelSize: 13; color: Local.Colors.secondaryText }
+                                    Text { anchors.centerIn: parent; text: modelData.glyph; font.family: Local.Colors.iconFontFamily; font.pixelSize: Core.MenuStyle.bar.actionGlyphFontSize; color: Local.Colors.secondaryText }
                                     MouseArea {
                                         id: barIconMouse
                                         anchors.fill: parent
@@ -329,10 +329,10 @@ Item {
         Loader {
             id: contentLoader
             z: 3
-            x: 12
-            y: 12
-            width: Math.max(0, parent.width - 24)
-            height: Math.max(0, parent.height - 24)
+            x: Core.MenuStyle.bar.loaderPadding
+            y: Core.MenuStyle.bar.loaderPadding
+            width: Math.max(0, parent.width - Core.MenuStyle.bar.loaderPadding * 2)
+            height: Math.max(0, parent.height - Core.MenuStyle.bar.loaderPadding * 2)
             active: root.expanded
             focus: root.expanded
             onLoaded: {
@@ -415,25 +415,25 @@ Item {
 
                     Column {
                         anchors.fill: parent
-                        spacing: 8
+                        spacing: Core.MenuStyle.menu.launcherSpacing
 
                         Rectangle {
                             width: parent.width
-                            height: 34
+                            height: Core.MenuStyle.menu.launcherInputHeight
                             radius: height / 2
                             color: Core.MenuStyle.inputSurfaceColor
-                            border.color: Core.Colors.accent
+                            border.color: Core.Colors.borderColor
                             border.width: Core.MenuStyle.borderWidth
 
                             TextInput {
                                 id: laInput
                                 anchors.fill: parent
-                                anchors.leftMargin: 16
-                                anchors.rightMargin: 16
+                                anchors.leftMargin: Core.MenuStyle.menu.launcherInputPadding
+                                anchors.rightMargin: Core.MenuStyle.menu.launcherInputPadding
                                 verticalAlignment: TextInput.AlignVCenter
-                                color: Core.Colors.foreground
+                                color: Core.Colors.textColor
                                     font.family: Core.Colors.fontFamily
-                                    font.pixelSize: 13
+                                    font.pixelSize: Core.MenuStyle.menu.launcherFontSize
                                     font.weight: Core.Colors.bodyWeight
                                 clip: true
                                 onTextChanged: laRoot.query = text
@@ -479,7 +479,7 @@ Item {
                         ListView {
                             id: laList
                             width: parent.width
-                            height: parent.height - 42
+                            height: parent.height - Core.MenuStyle.menu.launcherListReserve
                             clip: true
                             model: laRoot.apps
                             currentIndex: laRoot.selIndex
@@ -487,18 +487,18 @@ Item {
 
                             delegate: Rectangle {
                                 width: laList.width
-                                height: 34
+                                height: Core.MenuStyle.menu.launcherItemHeight
                                 radius: height / 2
                                 color: index === laRoot.selIndex
-                                       ? Core.Colors.accentSoftSurface
+                                       ? Core.Colors.fillActive
                                        : "transparent"
                                 Row {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: 12
-                                    spacing: 10
+                                    x: Core.MenuStyle.menu.launcherRowInset
+                                    spacing: Core.MenuStyle.sharedSpacing.medium
                                     Image {
                                         id: appIcon
-                                        width: 20; height: 20
+                                        width: Core.MenuStyle.menu.launcherIconSize; height: Core.MenuStyle.menu.launcherIconSize
                                         anchors.verticalCenter: parent.verticalCenter
                                         property string iconName: {
                                             const raw = String(modelData.icon || "");
@@ -519,8 +519,8 @@ Item {
                                         ]
                                         source: candyFailed ? fallbackSource : candySources[candyAttempt]
                                         asynchronous: true
-                                        sourceSize.width: 20
-                                        sourceSize.height: 20
+                                        sourceSize.width: Core.MenuStyle.menu.launcherIconSize
+                                        sourceSize.height: Core.MenuStyle.menu.launcherIconSize
                                         // Launcher delegates are destroyed when the
                                         // Loader closes; do not retain every decoded
                                         // application icon in the global image cache.
@@ -534,9 +534,9 @@ Item {
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.name
-                                        color: Core.Colors.foreground
+                                        color: Core.Colors.textColor
                                         font.family: Core.Colors.fontFamily
-                                        font.pixelSize: 13
+                                        font.pixelSize: Core.MenuStyle.menu.launcherFontSize
                                         font.weight: Core.Colors.bodyWeight
                                     }
                                 }
@@ -638,42 +638,42 @@ Item {
 
                     Column {
                         anchors.fill: parent
-                        spacing: 8
+                        spacing: Core.MenuStyle.menu.launcherSpacing
 
                         Text {
                             text: "Clipboard"
-                            color: Core.Colors.foreground
+                            color: Core.Colors.textColor
                             font.family: Core.Colors.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Core.MenuStyle.menu.clipboardHeadingFontSize
                             font.weight: Core.Colors.bodyWeight
                         }
 
                         ListView {
                             id: chList
                             width: parent.width
-                            height: parent.height - 24
+                            height: parent.height - Core.MenuStyle.bar.loaderPadding * 2
                             clip: true
-                            spacing: 4
+                            spacing: Core.MenuStyle.menu.clipboardSpacing
                             model: chRoot.items
                             currentIndex: chRoot.selIndex
                             onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
                             delegate: Rectangle {
                                 width: chList.width
-                                height: 30
+                                height: Core.MenuStyle.menu.clipboardItemHeight
                                 radius: height / 2
                                 color: chMouse.containsMouse || index === chRoot.selIndex
-                                       ? Core.Colors.accentSoftSurface
+                                       ? Core.Colors.fillActive
                                        : Core.MenuStyle.subtleSurfaceColor
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: 14
-                                    width: parent.width - 28
+                                    x: Core.MenuStyle.sharedSpacing.paddingLarge
+                                    width: parent.width - Core.MenuStyle.sharedSpacing.paddingLarge * 2
                                     elide: Text.ElideRight
                                     text: modelData.split("\t").slice(1).join(" ")
-                                    color: Core.Colors.foreground
+                                    color: Core.Colors.textColor
                                     font.family: Core.Colors.fontFamily
-                                    font.pixelSize: 11
+                                    font.pixelSize: Core.MenuStyle.menu.clipboardFontSize
                                     font.weight: Core.Colors.bodyWeight
                                 }
 
@@ -844,9 +844,9 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             text: "Wallpapers"
-                            color: Core.Colors.foreground
+                            color: Core.Colors.textColor
                             font.family: Core.Colors.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Core.MenuStyle.menu.wallpaperTitleFontSize
                             font.weight: Core.Colors.titleWeight
                         }
 
@@ -854,9 +854,9 @@ Item {
                             text: wpRoot.items.length > 0
                                 ? (wpRoot.currentCenterIndex + 1) + " / " + wpRoot.items.length
                                 : "empty"
-                            color: Core.Colors.muted
+                            color: Core.Colors.mutedText
                             font.family: Core.Colors.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Core.MenuStyle.menu.wallpaperCounterFontSize
                             font.weight: Core.Colors.labelWeight
                         }
                     }
@@ -874,9 +874,9 @@ Item {
                             anchors.centerIn: parent
                             visible: wpRoot.items.length === 0
                             text: "No wallpapers found"
-                            color: Core.Colors.muted
+                            color: Core.Colors.mutedText
                             font.family: Core.Colors.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Core.MenuStyle.menu.wallpaperEmptyFontSize
                         }
 
                         Repeater {
@@ -941,7 +941,7 @@ Item {
                                     cutBottomRight: true
                                     cutAmount: Core.MenuStyle.radius
                                     fillColor: Core.MenuStyle.dockButtonRule.idleSurface
-                                    strokeColor: tier === 0 ? Core.Colors.accent : Core.Colors.border
+                                    strokeColor: tier === 0 ? Core.Colors.borderColor : Core.Colors.borderColor
                                     strokeWidth: Core.MenuStyle.sharedRadius.border
 
                                     Image {
@@ -951,8 +951,8 @@ Item {
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: true
                                         cache: true
-                                        sourceSize.width: 440
-                                        sourceSize.height: 236
+                                        sourceSize.width: Core.MenuStyle.menu.wallpaperSourceWidth
+                                        sourceSize.height: Core.MenuStyle.menu.wallpaperSourceHeight
                                     }
 
                                     MouseArea {
@@ -981,21 +981,21 @@ Item {
                     anchors.fill: parent
                     Column {
                         anchors.centerIn: parent
-                        spacing: 4
+                        spacing: Core.MenuStyle.menu.placeholderSpacing
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "\uf013"
                         font.family: Core.Colors.iconFontFamily
-                            font.pixelSize: 18
-                            color: Core.Colors.muted
+                            font.pixelSize: Core.MenuStyle.menu.placeholderIconFontSize
+                            color: Core.Colors.mutedText
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "under construction"
                             font.family: Core.Colors.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Core.MenuStyle.menu.placeholderTextFontSize
                         font.weight: Core.Colors.bodyWeight
-                            color: Core.Colors.muted
+                            color: Core.Colors.mutedText
                         }
                     }
                 }

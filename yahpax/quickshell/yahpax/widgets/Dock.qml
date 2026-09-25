@@ -51,26 +51,29 @@ Item {
                     scale: hovered ? Core.MenuStyle.dock.hoverScale : Core.MenuStyle.sharedOpacity.idle
                     Behavior on scale { NumberAnimation { duration: Core.MenuStyle.sharedAnimation.fastDuration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.fastSpatialCurve } }
 
-                    Rectangle {
+                    Core.SharpShape {
                         id: body
                         anchors.fill: parent
                         // Keep dock entries on the same wallpaper-derived
                         // accent family instead of the near-black panel fill.
-                        color: mouse.pressed
+                        fillColor: mouse.pressed
                             ? Core.MenuStyle.dockButtonRule.pressedSurface
                             : entry.hovered
                             ? Core.MenuStyle.dockButtonRule.activeSurface
                             : Core.MenuStyle.dockButtonRule.idleSurface
-                        border.width: Core.MenuStyle.dock.entryBorderWidth
-                        border.color: entry.hovered
-                            ? Local.Colors.accent
-                            : Local.Colors.separator
+                        cutTopLeft: false
+                        cutTopRight: false
+                        cutBottomLeft: false
+                        cutBottomRight: false
+                        strokeWidth: Core.MenuStyle.dock.entryBorderWidth
+                        strokeColor: entry.hovered
+                            ? Local.Colors.borderColor
+                            : Local.Colors.borderColor
                         transform: Matrix4x4 {
                             matrix: Qt.matrix4x4(1, 0.28, 0, -8,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
                         }
-                        Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
-                        Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
-                        Behavior on border.color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                        Behavior on fillColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                        Behavior on strokeColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
 
                         Rectangle {
                             anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -80,7 +83,7 @@ Item {
                         Rectangle {
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                             height: Core.MenuStyle.dock.entryBorderWidth + Core.MenuStyle.borderWidth
-                            color: Local.Colors.accent
+                            color: Core.Colors.iconColor
                             SequentialAnimation on opacity {
                                 loops: Animation.Infinite
                                 NumberAnimation { to: Core.MenuStyle.sharedOpacity.idle;  duration: Core.MenuStyle.dock.pulseDuration; easing.type: Easing.InOutSine }
@@ -95,22 +98,26 @@ Item {
                         anchors.leftMargin: Core.MenuStyle.dock.rowLeftPadding
                         spacing: Core.MenuStyle.dock.rowSpacing
 
-                        Rectangle {
-                        width: Core.MenuStyle.dock.iconWidth; height: Core.MenuStyle.dock.iconHeight
+                        Core.SharpShape {
+                            width: Core.MenuStyle.dock.iconWidth; height: Core.MenuStyle.dock.iconHeight
                             anchors.verticalCenter: parent.verticalCenter
-                            color: mouse.pressed
+                            cutTopLeft: false
+                            cutTopRight: false
+                            cutBottomLeft: false
+                            cutBottomRight: false
+                            fillColor: mouse.pressed
                                 ? Core.MenuStyle.dockButtonRule.pressedSurface
                                 : entry.hovered
                                 ? Core.MenuStyle.dockButtonRule.activeSurface
                                 : Core.MenuStyle.dockButtonRule.idleSurface
-                            border.width: Core.MenuStyle.dock.entryBorderWidth
-                            border.color: Local.Colors.accent
-                            Behavior on color { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
+                            strokeWidth: Core.MenuStyle.dock.entryBorderWidth
+                            strokeColor: Local.Colors.borderColor
+                            Behavior on fillColor { ColorAnimation { duration: Core.MenuStyle.sharedAnimation.duration; easing.type: Core.MenuStyle.bezierSplineType; easing.bezierCurve: Core.MenuStyle.sharedAnimation.defaultEffectsCurve } }
 
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData.icon
-                                color: Local.Colors.accent
+                                color: Local.Colors.iconColor
                                 font.pixelSize: Core.MenuStyle.dock.iconFontSize
                                 font.family: Local.Colors.fontFamily
                             }
@@ -121,7 +128,7 @@ Item {
                             spacing: 1
                             Text {
                                 text: modelData.label
-                                color: entry.hovered ? Local.Colors.accent : Local.Colors.secondaryText
+                                color: entry.hovered ? Local.Colors.iconColor : Local.Colors.secondaryText
                                 font.pixelSize: Core.MenuStyle.dock.titleFontSize
                                 font.bold: entry.hovered
                                 font.family: Local.Colors.fontFamily
@@ -129,7 +136,7 @@ Item {
                             }
                             Text {
                                 text: "› " + modelData.sub
-                                color: Local.Colors.muted
+                                color: Local.Colors.secondaryText
                                 font.pixelSize: Core.MenuStyle.dock.metadataFontSize
                                 font.family: Local.Colors.fontFamily
                             }

@@ -22,16 +22,16 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: "BLUETOOTH"
-            color: Core.Colors.foreground
+            color: Core.Colors.textColor
             font.family: Core.Colors.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Core.MenuStyle.connectivity.headingFontSize
             font.weight: Core.Colors.titleWeight
         }
         Text {
             text: Local.BluetoothService.enabled ? "ON" : "OFF"
-            color: Local.BluetoothService.enabled ? Core.Colors.accent : Core.Colors.muted
+            color: Local.BluetoothService.enabled ? Core.Colors.iconColor : Core.Colors.mutedText
             font.family: Core.Colors.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
         }
     }
 
@@ -39,20 +39,20 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Core.MenuStyle.sharedSpacing.small
 
-        Rectangle {
+        Core.SharpShape {
             Layout.fillWidth: true
-            height: 32
-            radius: Core.MenuStyle.sharedRadius.card
-            color: enabledMouse.pressed
+            cutBottomRight: false
+            height: Core.MenuStyle.connectivity.passwordHeight
+            fillColor: enabledMouse.pressed
                    ? Core.MenuStyle.pressedRule.accentSurface
                    : enabledMouse.containsMouse
                    ? Core.MenuStyle.toggleRule.hoverSurface
                    : Local.BluetoothService.enabled
                    ? Core.MenuStyle.toggleRule.onSurface
                    : Core.MenuStyle.toggleRule.offSurface
-            border.width: Core.MenuStyle.sharedRadius.border
-            border.color: Core.Colors.accent
-            Behavior on color {
+            strokeWidth: Core.MenuStyle.sharedRadius.border
+            strokeColor: Core.Colors.borderColor
+            Behavior on fillColor {
                 ColorAnimation {
                     duration: Core.MenuStyle.toggleRule.duration
                     easing.type: Core.MenuStyle.bezierSplineType
@@ -62,9 +62,9 @@ ColumnLayout {
             Text {
                 anchors.centerIn: parent
                 text: Local.BluetoothService.enabled ? "DISABLE" : "ENABLE"
-                color: Core.Colors.foreground
+                color: Core.Colors.textColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
             }
             MouseArea {
                 id: enabledMouse
@@ -74,18 +74,18 @@ ColumnLayout {
             }
         }
 
-        Rectangle {
+        Core.SharpShape {
             Layout.fillWidth: true
-            height: 32
-            radius: Core.MenuStyle.sharedRadius.card
-            color: discoverMouse.pressed
+            cutBottomRight: false
+            height: Core.MenuStyle.connectivity.passwordHeight
+            fillColor: discoverMouse.pressed
                    ? Core.MenuStyle.pressedRule.accentSurface
                    : discoverMouse.containsMouse
-                   ? Core.MenuStyle.hoverRule.surface
+                   ? Core.MenuStyle.dockButtonRule.activeSurface
                    : Core.MenuStyle.sharedSurface.input
-            border.width: Core.MenuStyle.sharedRadius.border
-            border.color: Core.Colors.accent
-            Behavior on color {
+            strokeWidth: Core.MenuStyle.sharedRadius.border
+            strokeColor: Core.Colors.borderColor
+            Behavior on fillColor {
                 ColorAnimation {
                     duration: Core.MenuStyle.hoverRule.duration
                     easing.type: Core.MenuStyle.bezierSplineType
@@ -95,9 +95,9 @@ ColumnLayout {
             Text {
                 anchors.centerIn: parent
                 text: Local.BluetoothService.discovering ? "STOP SCAN" : "SCAN"
-                color: Core.Colors.foreground
+                color: Core.Colors.textColor
                 font.family: Core.Colors.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
             }
             MouseArea {
                 id: discoverMouse
@@ -114,9 +114,9 @@ ColumnLayout {
         text: Local.BluetoothService.enabled
               ? Local.BluetoothService.devices.length + " device" + (Local.BluetoothService.devices.length === 1 ? "" : "s") + " available"
               : "Bluetooth disabled"
-        color: Core.Colors.muted
+        color: Core.Colors.mutedText
         font.family: Core.Colors.fontFamily
-        font.pixelSize: 10
+        font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
     }
 
     ListView {
@@ -127,23 +127,23 @@ ColumnLayout {
         model: [...Local.BluetoothService.devices].sort((a, b) =>
             (b.connected - a.connected) || (b.paired - a.paired) || a.name.localeCompare(b.name))
 
-        delegate: Rectangle {
+        delegate: Core.SharpShape {
             required property var modelData
+            cutBottomRight: false
             readonly property bool loading: modelData.state === BluetoothDeviceState.Connecting
                                             || modelData.state === BluetoothDeviceState.Disconnecting
             width: ListView.view.width
-            height: 42
-            radius: Core.MenuStyle.sharedRadius.card
-            color: deviceMouse.pressed
+            height: Core.MenuStyle.connectivity.networkRowHeight
+            fillColor: deviceMouse.pressed
                    ? Core.MenuStyle.pressedRule.accentSurface
                    : deviceMouse.containsMouse
-                   ? Core.MenuStyle.hoverRule.surface
+                   ? Core.MenuStyle.dockButtonRule.activeSurface
                    : modelData.connected
-                   ? Core.MenuStyle.activeRule.surface
-                   : Core.MenuStyle.inactiveRule.surface
-            border.width: Core.MenuStyle.sharedRadius.border
-            border.color: modelData.connected ? Core.Colors.accent : Core.Colors.muted
-            Behavior on color {
+                   ? Core.MenuStyle.dockButtonRule.activeSurface
+                   : Core.MenuStyle.dockButtonRule.idleSurface
+            strokeWidth: Core.MenuStyle.sharedRadius.border
+            strokeColor: modelData.connected ? Core.Colors.borderColor : Core.Colors.mutedText
+            Behavior on fillColor {
                 ColorAnimation {
                     duration: Core.MenuStyle.toggleRule.duration
                     easing.type: Core.MenuStyle.bezierSplineType
@@ -158,28 +158,28 @@ ColumnLayout {
                 spacing: Core.MenuStyle.sharedSpacing.small
                 Text {
                     text: modelData.connected ? "●" : "○"
-                    color: modelData.connected ? Core.Colors.accent : Core.Colors.muted
-                    font.pixelSize: 12
+                    color: modelData.connected ? Core.Colors.iconColor : Core.Colors.mutedText
+                    font.pixelSize: Core.MenuStyle.connectivity.headingFontSize
                 }
                 Text {
                     Layout.fillWidth: true
                     text: modelData.name || modelData.address
-                    color: Core.Colors.foreground
+                    color: Core.Colors.textColor
                     font.family: Core.Colors.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
                     elide: Text.ElideRight
                 }
                 Text {
                     visible: loading
                     text: "..."
-                    color: Core.Colors.muted
-                    font.pixelSize: 10
+                    color: Core.Colors.mutedText
+                    font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
                 }
                 Text {
                     visible: modelData.batteryAvailable
                     text: Math.round(modelData.battery * 100) + "%"
-                    color: Core.Colors.muted
-                    font.pixelSize: 9
+                    color: Core.Colors.mutedText
+                    font.pixelSize: Core.MenuStyle.connectivity.metadataFontSize
                 }
             }
 
@@ -196,9 +196,9 @@ ColumnLayout {
             anchors.centerIn: parent
             visible: Local.BluetoothService.enabled && Local.BluetoothService.devices.length === 0
             text: Local.BluetoothService.discovering ? "SEARCHING..." : "NO DEVICES"
-            color: Core.Colors.muted
+            color: Core.Colors.mutedText
             font.family: Core.Colors.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Core.MenuStyle.connectivity.bodyFontSize
         }
     }
 }

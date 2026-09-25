@@ -127,8 +127,8 @@ Item {
                         implicitWidth: Core.MenuStyle.notification.clearButtonSize
                         implicitHeight: Core.MenuStyle.notification.clearButtonSize
                         radius: height / 2
-                        border.width: Core.MenuStyle.sharedRadius.border
-                        border.color: Core.Colors.accent
+                        border.width: Core.MenuStyle.notification.controlBorderWidth
+                        border.color: Core.MenuStyle.notification.controlBorderColor
                         color: clearMouse.pressed
                                ? Core.MenuStyle.dockButtonRule.pressedSurface
                                : clearMouse.containsMouse
@@ -240,10 +240,10 @@ Item {
                             cutBottomRight: true
                             cutAmount: Core.MenuStyle.radius
                             fillColor: wrapper.modelData.urgency === 2
-                                ? Core.Colors.accentSoftSurface
+                                ? Core.Colors.fillActive
                                 : Core.MenuStyle.globalSurfaceColor
                             strokeWidth: Core.MenuStyle.sharedRadius.border
-                            strokeColor: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalBorderColor
+                            strokeColor: wrapper.modelData.urgency === 2 ? Core.Colors.borderColor : Core.MenuStyle.globalBorderColor
                             // Popup cards stay compact; only center cards use
                             // the center's expanded content presentation.
                             property bool expanded: !wrapper.popupMode
@@ -297,7 +297,7 @@ Item {
                                         Rectangle {
                                             anchors.fill: parent
                                             radius: height / 2
-                                            color: wrapper.modelData.urgency === 2 ? Core.Colors.accent : Core.MenuStyle.globalSurfaceColor
+                                            color: wrapper.modelData.urgency === 2 ? Core.Colors.iconColor : Core.MenuStyle.globalSurfaceColor
                                         }
 
                                         Image {
@@ -366,8 +366,8 @@ Item {
                                         cutBottomLeft: true
                                         cutBottomRight: true
                                         cutAmount: Core.MenuStyle.radius
-                                        strokeColor: Core.Colors.accent
-                                        strokeWidth: Core.MenuStyle.sharedRadius.border
+                                        strokeColor: Core.MenuStyle.notification.controlBorderColor
+                                        strokeWidth: Core.MenuStyle.notification.controlBorderWidth
                                         fillColor: dismissMouse.pressed
                                                   ? Core.MenuStyle.dockButtonRule.pressedSurface
                                                   : dismissMouse.containsMouse
@@ -389,7 +389,10 @@ Item {
                                             acceptedButtons: Qt.LeftButton
                                             onClicked: {
                                                 expiry.stop()
-                                                Core.AppState.hideNotificationPopup(wrapper.modelData.id)
+                                                if (wrapper.popupMode)
+                                                    Core.AppState.hideNotificationPopup(wrapper.modelData.id)
+                                                else
+                                                    Core.AppState.dismissNotification(wrapper.modelData.id)
                                             }
                                         }
                                     }
@@ -435,7 +438,7 @@ Item {
                                             Layout.fillWidth: true
                                             implicitHeight: Core.MenuStyle.notification.actionHeight
                                             radius: Core.MenuStyle.sharedRadius.card
-                                            color: actionMouse.containsMouse ? Core.MenuStyle.hoverRule.surface : Core.MenuStyle.globalSurfaceColor
+                                            color: actionMouse.containsMouse ? Core.MenuStyle.dockButtonRule.activeSurface : Core.MenuStyle.globalSurfaceColor
 
                                             Text {
                                                 anchors.centerIn: parent

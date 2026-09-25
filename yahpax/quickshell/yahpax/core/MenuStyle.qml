@@ -80,37 +80,37 @@ QtObject {
     readonly property real pressedSurfaceOpacity: 0.20
 
     // Base opaque panel tint used by non-global menu surfaces.
-    readonly property color panelColor: Colors.panelBackground
+    readonly property color panelColor: Colors.sharedSurfaceColor
     // Base translucent tint used by the expanded BarMorph surface.
-    readonly property color morphPanelColor: Colors.panelBackground
+    readonly property color morphPanelColor: Colors.sharedSurfaceColor
     // One adaptive translucent surface shared by Yahpax shell surfaces. Light
     // wallpapers use the existing dark glass; dark wallpapers use white glass.
     // The compositor blur remains provided by the single quickshell-bar layer.
     readonly property color darkGlobalSurfaceColor: Colors.blurMaskColor
     readonly property color lightGlobalSurfaceColor: Colors.blurMaskColor
     readonly property bool useDarkGlobalSurface: !Colors.loaded || !Colors.panelIsLight
-    readonly property color globalSurfaceColor: Colors.blurMaskColor
-    readonly property color globalBorderColor: Colors.border
+    readonly property color globalSurfaceColor: Colors.sharedSurfaceColor
+    readonly property color globalBorderColor: Colors.borderColor
     // Screen space reserved by each GlobalShellLayer edge surface.
     readonly property int globalEdgeThickness: blur.edgeThickness
     // Low-contrast surface used by inactive controls.
-    readonly property color subtleSurfaceColor: Colors.widgetBackground
+    readonly property color subtleSurfaceColor: Colors.fillInactive
     // Hover overlay used by buttons and list rows.
-    readonly property color hoverSurfaceColor: Colors.widgetHover
+    readonly property color hoverSurfaceColor: Colors.fillActive
     // Pressed overlay used by buttons and list rows.
-    readonly property color pressedSurfaceColor: Colors.widgetPressed
+    readonly property color pressedSurfaceColor: Colors.fillPressed
     // Default notification-card surface tint.
-    readonly property color notificationSurfaceColor: Colors.widgetBackground
+    readonly property color notificationSurfaceColor: Colors.fillInactive
     // Input/search field surface tint.
-    readonly property color inputSurfaceColor: Colors.widgetBackground
+    readonly property color inputSurfaceColor: Colors.fillInactive
     // Active/accent control surface tint.
-    readonly property color accentSurfaceColor: Colors.accentSoftSurface
+    readonly property color accentSurfaceColor: Colors.fillActive
     // Hovered active/accent control surface tint.
-    readonly property color accentHoverSurfaceColor: Colors.accentStrongSurface
+    readonly property color accentHoverSurfaceColor: Colors.fillActive
     // Pressed active/accent control surface tint.
-    readonly property color accentPressedSurfaceColor: Colors.accentStrongSurface
+    readonly property color accentPressedSurfaceColor: Colors.fillPressed
     // Border color used by shell panels and interactive controls.
-    readonly property color borderColor: Colors.border
+    readonly property color borderColor: Colors.borderColor
     // Primary text color used by shared shell controls.
     readonly property color textColor: Colors.primaryText
     // Secondary text color used by labels and metadata.
@@ -118,7 +118,7 @@ QtObject {
     // Accent color used by active controls and indicators.
     readonly property color accentColor: Colors.accent
     // Base color used by modal overlay surfaces.
-    readonly property color overlayColor: "#000000"
+    readonly property color overlayColor: Colors.overlayColor
     // Opacity of the dark overlay behind modal menu content.
     readonly property real overlayOpacity: 0.45
 
@@ -129,7 +129,7 @@ QtObject {
     // Radius used by thumbnail/icon surfaces.
     readonly property int thumbnailRadius: 26
     // Shared border thickness for shell surfaces.
-    readonly property int borderWidth: 2
+    readonly property int borderWidth: 1
     // Smallest gap between adjacent controls.
     readonly property int spacingTiny: 2
     // Small gap between related controls.
@@ -147,9 +147,11 @@ QtObject {
 
     // Main bar dimensions and reveal geometry.
     readonly property QtObject bar: QtObject {
+        // Base height of the main bar content before expansion padding.
+        readonly property real baseHeight: 40
         // Extra lower height below the palette-defined bar row, keeping
         // bottom content clear of the collapsed trapezoid transition.
-        readonly property real heightExtra: 8
+        readonly property real heightExtra: 4
         // Maximum width of the fixed bar host.
         readonly property real hostMaxWidth: 900
         // Minimum width of the fixed bar host.
@@ -159,9 +161,9 @@ QtObject {
         // Maximum corner-cut radius used by expanded BarMorph surfaces.
         readonly property real expandedRadiusCap: 20
         // Top inset of the inner bar content surface.
-        readonly property real surfaceTopInset: 2
+        readonly property real surfaceTopInset: 0
         // Bottom inset of the inner bar content surface.
-        readonly property real surfaceBottomInset: 1
+        readonly property real surfaceBottomInset: 0
         // Top inset of the bar inside the global shell.
         readonly property real topOffset: 5
         // Width ratio of the invisible top-edge reveal zone.
@@ -171,7 +173,7 @@ QtObject {
         // Vertical offset of the reveal zone above the bar host.
         readonly property real revealZoneOffset: -5
         // Width ratio used by the collapsed BarMorph.
-        readonly property real collapsedWidthRatio: 0.300
+        readonly property real collapsedWidthRatio: 0.250
         // Bottom inset on each side of the collapsed bar trapezoid.
         readonly property real collapsedTrapezoidInsetRatio: 0.025
         // Maximum collapsed BarMorph width.
@@ -186,6 +188,30 @@ QtObject {
         readonly property real actionHeightOffset: 10
         // Width of compact bar action buttons.
         readonly property real actionWidth: 30
+        // Workspace cell width in the bar.
+        readonly property real workspaceCellWidth: 26
+        // Workspace cell height in the bar.
+        readonly property real workspaceCellHeight: 22
+        // Gap between workspace cells.
+        readonly property real workspaceSpacing: 2
+        // Workspace number font size.
+        readonly property real workspaceFontSize: 12
+        // Clock font size.
+        readonly property real clockFontSize: 13
+        // Clock refresh interval in milliseconds.
+        readonly property int clockRefreshInterval: 15000
+        // Compact bar action glyph font size.
+        readonly property real actionGlyphFontSize: 13
+        // Inner padding around loaded menu content.
+        readonly property real loaderPadding: 12
+        // Opacity of the active workspace number.
+        readonly property real workspaceActiveOpacity: 1.0
+        // Opacity of an occupied inactive workspace number.
+        readonly property real workspaceOccupiedOpacity: 0.85
+        // Opacity of an empty inactive workspace number.
+        readonly property real workspaceEmptyOpacity: 0.35
+        // Number of workspace indicators shown in the bar.
+        readonly property int workspaceCount: 5
     }
 
     // Expanded menu dimensions used by BarMorph and related panels.
@@ -240,6 +266,94 @@ QtObject {
         readonly property real compactWidth: 280
         // Compact fallback menu height.
         readonly property real compactHeight: 90
+        // Launcher column spacing.
+        readonly property real launcherSpacing: 8
+        // Launcher search field height.
+        readonly property real launcherInputHeight: 34
+        // Launcher input horizontal padding.
+        readonly property real launcherInputPadding: 16
+        // Launcher list item height.
+        readonly property real launcherItemHeight: 34
+        // Launcher list height reserve for the search field.
+        readonly property real launcherListReserve: 42
+        // Launcher row horizontal inset.
+        readonly property real launcherRowInset: 12
+        // Launcher icon size.
+        readonly property real launcherIconSize: 20
+        // Launcher text size.
+        readonly property real launcherFontSize: 13
+        // Clipboard list spacing.
+        readonly property real clipboardSpacing: 4
+        // Clipboard item height.
+        readonly property real clipboardItemHeight: 30
+        // Clipboard text size.
+        readonly property real clipboardFontSize: 11
+        // Clipboard heading font size.
+        readonly property real clipboardHeadingFontSize: 12
+        // Wallpaper selector title font size.
+        readonly property real wallpaperTitleFontSize: 12
+        // Wallpaper selector counter font size.
+        readonly property real wallpaperCounterFontSize: 10
+        // Wallpaper selector empty-state font size.
+        readonly property real wallpaperEmptyFontSize: 11
+        // Placeholder icon font size for unavailable modes.
+        readonly property real placeholderIconFontSize: 18
+        // Placeholder text font size for unavailable modes.
+        readonly property real placeholderTextFontSize: 11
+        // Placeholder column spacing.
+        readonly property real placeholderSpacing: 4
+        // Wallpaper image source width for thumbnail decoding.
+        readonly property real wallpaperSourceWidth: 440
+        // Wallpaper image source height for thumbnail decoding.
+        readonly property real wallpaperSourceHeight: 236
+    }
+
+    // Connectivity-panel dimensions and typography.
+    readonly property QtObject connectivity: QtObject {
+        // Thin separator height.
+        readonly property real separatorHeight: 1
+        // Thin separator opacity.
+        readonly property real separatorOpacity: 0.35
+        // Connected-network card height.
+        readonly property real connectedCardHeight: 38
+        // Network row height.
+        readonly property real networkRowHeight: 34
+        // Password field height.
+        readonly property real passwordHeight: 32
+        // Primary action button width.
+        readonly property real actionWidth: 88
+        // Primary action button height.
+        readonly property real actionHeight: 28
+        // Filter button height.
+        readonly property real filterHeight: 26
+        // Refresh filter width.
+        readonly property real refreshWidth: 32
+        // Other filter button width.
+        readonly property real filterWidth: 60
+        // Connectivity heading font size.
+        readonly property real headingFontSize: 12
+        // Connectivity body font size.
+        readonly property real bodyFontSize: 10
+        // Connectivity metadata font size.
+        readonly property real metadataFontSize: 9
+        // Password input font size.
+        readonly property real passwordFontSize: 11
+    }
+
+    // Audio visualizer UI dimensions and refresh timing.
+    readonly property QtObject audio: QtObject {
+        // Visualizer width.
+        readonly property real width: 550
+        // Visualizer height.
+        readonly property real height: 200
+        // Visualizer edge margin.
+        readonly property real margin: 0
+        // Audio sample refresh interval in milliseconds.
+        readonly property int refreshInterval: 1000
+        // Maximum visualizer bar height.
+        readonly property real maximumHeight: 45
+        // Minimum visualizer bar height.
+        readonly property real minimumHeight: 0
     }
 
     // Dock layout metrics.
@@ -299,7 +413,7 @@ QtObject {
         // Minimum height of the compact automatic notification popup card.
         readonly property real popupMinHeight: 88
         // Vertical screen padding used to calculate available panel height.
-        readonly property real screenPadding: -0
+        readonly property real screenPadding: 0
         // Refresh interval for relative notification timestamps.
         readonly property int clockRefreshInterval: 5000
         // Automatic popup lifetime, in milliseconds.
@@ -330,6 +444,10 @@ QtObject {
         readonly property real iconInset: 5
         // Notification Center clear button size.
         readonly property real clearButtonSize: 30
+        // Border color shared by notification header and item controls.
+        readonly property color controlBorderColor: Colors.accent
+        // Border width shared by notification header and item controls.
+        readonly property real controlBorderWidth: root.sharedRadius.border
         // Notification body row spacing when no section gap is needed.
         readonly property real compactRowSpacing: 0
         // Maximum expanded body lines.
@@ -355,6 +473,8 @@ QtObject {
     readonly property QtObject blur: QtObject {
         // Namespace used by Yahpax's shared blurred shell surface.
         readonly property string namespace: "quickshell-bar"
+        // Namespace used by transparent edge-reservation surfaces.
+        readonly property string exclusionNamespace: "quickshell-bar-exclusion"
         // Screen edge thickness associated with the blurred layer.
         readonly property real edgeThickness: 6
     }
@@ -362,7 +482,7 @@ QtObject {
     // Shared layout offsets used by screen-attached components.
     readonly property QtObject layout: QtObject {
         // Main bar's top screen offset.
-        readonly property real barTopOffset: 5
+        readonly property real barTopOffset: 0
         // Global exclusion surface's minimum extent.
         readonly property real exclusionExtent: 1
         // Fallback screen width used by off-screen morph calculations.
@@ -401,8 +521,24 @@ QtObject {
             readonly property real titleFontSize: 15
             // Todo metadata font size.
             readonly property real metadataFontSize: 10
-            // Todo completion icon font size.
-            readonly property real completeFontSize: 16
+        // Todo completion icon font size.
+        readonly property real completeFontSize: 16
+        // Todo card border width.
+        readonly property real borderWidth: root.sharedRadius.border
+        // Todo card top accent stripe height.
+        readonly property real topStripeHeight: 1
+        // Todo card bottom accent stripe height.
+        readonly property real bottomStripeHeight: 2
+        // Todo accent pulse duration in milliseconds.
+        readonly property int pulseDuration: 1100
+        // Todo accent pulse minimum opacity.
+        readonly property real pulseMinimumOpacity: 0.35
+        // Todo card shear factor.
+        readonly property real shearFactor: 0.28
+        // Todo card horizontal transform offset.
+        readonly property real transformOffset: -8
+        // Todo completion button right inset.
+        readonly property real completeButtonRightMargin: 16
         }
     }
 
@@ -557,11 +693,11 @@ QtObject {
     }
     readonly property QtObject dockButtonRule: QtObject {
         // Wallpaper-derived fill used by dock buttons at rest.
-        readonly property color idleSurface: Colors.accentFaintSurface
+        readonly property color idleSurface: Colors.fillInactive
         // Wallpaper-derived fill used by dock buttons when selected or hovered.
-        readonly property color activeSurface: Colors.accentSoftSurface
+        readonly property color activeSurface: Colors.fillActive
         // Wallpaper-derived fill used while one of these buttons is pressed.
-        readonly property color pressedSurface: Colors.accentStrongSurface
+        readonly property color pressedSurface: Colors.fillPressed
     }
     readonly property QtObject toggleRule: QtObject {
         // Surface used when a toggle is off.

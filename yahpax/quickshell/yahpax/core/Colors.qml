@@ -29,13 +29,12 @@ QtObject {
     readonly property int iconWeight: Font.Normal
     // Compatibility alias for older body-text consumers.
     readonly property int textWeight: Font.Normal
-    // Legacy geometry aliases retained for existing components.
-    readonly property int radius: 16
-    readonly property int borderWidth: 1
-    // Base height of the main bar before MenuStyle adjustments.
-    readonly property int barHeight: 40
     // Opacity of the modal overlay behind menus.
     readonly property real overlayOpacity: 0.7
+    // Base color for modal overlays behind menu content.
+    readonly property color overlayColor: "#000000"
+    // Color basis for every shared blurred shell/panel surface.
+    readonly property color sharedSurfaceColor: fillInactive
 
     // Fallback wallpaper background while the generated palette is loading.
     property color walBackground: "#0d0d0d"
@@ -67,8 +66,6 @@ QtObject {
 
     // Raw wallpaper/background color from the generated palette.
     readonly property color background: walBackground
-    // Foreground selected from the effective panel surface.
-    readonly property color foreground: primaryText
     // Cursor color from the generated palette.
     readonly property color cursor: walCursor
     // Generated palette exposed to widgets using palette accents.
@@ -143,8 +140,19 @@ QtObject {
         ? Qt.rgba(0.03, 0.035, 0.05, 1) : Qt.rgba(0.98, 0.99, 1, 1)
     // Text color placed on active workspace/accent markers.
     readonly property color activeMarkerText: accentText
-    // Compatibility alias for older components.
-    readonly property color muted: mutedText
+
+    // Canonical Dock-derived inactive button fill.
+    readonly property color fillInactive: accentFaintSurface
+    // Canonical Dock-derived active/hover button fill.
+    readonly property color fillActive: accentSoftSurface
+    // Canonical Dock-derived pressed button fill.
+    readonly property color fillPressed: accentStrongSurface
+    // Canonical Dock-derived border color for active controls.
+    readonly property color borderColor: accent
+    // Canonical Dock-derived readable text color.
+    readonly property color textColor: primaryText
+    // Dock uses the accent specifically for icon glyphs.
+    readonly property color iconColor: accent
 
     // Track whether the generated palette has loaded successfully.
     property bool loaded: false

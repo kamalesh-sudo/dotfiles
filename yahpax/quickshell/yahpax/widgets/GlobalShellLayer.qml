@@ -117,7 +117,7 @@ Variants {
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
-        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.namespace: Core.MenuStyle.blur.exclusionNamespace
         WlrLayershell.layer: WlrLayer.Top
     }
 
@@ -129,7 +129,7 @@ Variants {
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
-        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.namespace: Core.MenuStyle.blur.exclusionNamespace
         WlrLayershell.layer: WlrLayer.Top
     }
 
@@ -141,7 +141,7 @@ Variants {
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
-        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.namespace: Core.MenuStyle.blur.exclusionNamespace
         WlrLayershell.layer: WlrLayer.Top
     }
 
@@ -153,7 +153,7 @@ Variants {
         color: "transparent"
         exclusiveZone: Core.MenuStyle.globalEdgeThickness
         mask: Region {}
-        WlrLayershell.namespace: "quickshell-bar-exclusion"
+        WlrLayershell.namespace: Core.MenuStyle.blur.exclusionNamespace
         WlrLayershell.layer: WlrLayer.Top
     }
     }

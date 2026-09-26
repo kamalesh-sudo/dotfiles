@@ -36,6 +36,7 @@ end
 
 set -l mime (file --brief --mime-type -- "$input")
 set -l palette_image "$input"
+set -l extraction_image ""
 set -l video_mode 0
 
 if string match -q 'video/*' "$mime"
@@ -92,11 +93,39 @@ if not type -q wal
     exit 1
 end
 
-if test -n "$palette_image"
-    set -l safe_name (string replace -a / _ -- "$palette_image")
+# Keep the displayed/classified image separate from the image given to pywal.
+# pywal should sample only the centered 50% x 50% region.
+set -l crop_stamp (date +%s%N)
+set extraction_image "$cache_dir/wallpaper-palette-crop-$crop_stamp.png"
+if not type -q ffmpeg
+    echo "ffmpeg is required for the centered palette crop" >&2
+    exit 1
+end
+
+if not timeout 30s ffmpeg -hide_banner -loglevel error -y \
+    -i "$palette_image" \
+    -vf "crop=iw*0.5:ih*0.5:iw*0.25:ih*0.25" \
+    -frames:v 1 "$extraction_image"
+    rm -f "$extraction_image"
+    echo "Failed to create centered palette crop: $palette_image" >&2
+    exit 1
+end
+if not test -s "$extraction_image"
+    echo "Centered palette crop produced no image: $palette_image" >&2
+    exit 1
+end
+
+set -l safe_name (string replace -a / _ -- "$extraction_image")
+if test -n "$extraction_image"
     find "$QS_WAL_DIR/schemes" -maxdepth 1 -type f -name "$safe_name*" -delete 2>/dev/null; or true
 end
-wal -n -q -i "$palette_image"
+wal -n -q -i "$extraction_image"
+set -l wal_status $status
+rm -f "$extraction_image"
+if test $wal_status -ne 0
+    echo "pywal failed for centered palette crop" >&2
+    exit $wal_status
+end
 
 if not test -s "$QS_WAL_COLORS"
     echo "pywal did not generate colors.json" >&2

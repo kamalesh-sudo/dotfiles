@@ -243,7 +243,6 @@ local mainMod = "SUPER"
 
 -- SLEEP RULE
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
-hl.bind("ALT + F4", hl.dsp.exec_cmd("systemctl suspend"))
 hl.bind("CTRL + ALT + DELETE", hl.dsp.exec_cmd("systemctl poweroff"))
 -- Applications
 hl.bind(mainMod .. " + PERIOD",hl.dsp.exec_cmd("plasma-emojier"))
@@ -276,7 +275,7 @@ hl.bind(mainMod .."+SHIFT + R",
 
 -- Stop recording
 hl.bind("CTRL + SHIFT + X",
-    hl.dsp.exec_cmd([[pkill -SIGINT -f 'gpu-screen-recorder']]))
+    hl.dsp.exec_cmd([[pkill 'gpu-screen-reco']]))
 
 
 hl.bind(mainMod .. "+ CTRL+ S",

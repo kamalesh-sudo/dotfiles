@@ -1,3 +1,0 @@
-# This file contains fish universal variable definitions.
-# VERSION: 3.0
-SETUVAR fish_user_paths:/home/kamal/\x2elocal/share/go/bin\x1e/opt/nessus/sbin\x1e/opt/nessus/bin\x1e/usr/lib/jvm/default/bin\x1e/var/lib/flatpak/exports/bin\x1e/usr/bin\x1e/usr/local/bin\x1e/usr/local/sbin\x1e/home/kamal/\x2elocal/bin

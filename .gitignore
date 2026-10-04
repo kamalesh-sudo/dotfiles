@@ -3,3 +3,46 @@
 !.gitignore
 paths.conf
 state.conf
+# Generated theme/cache output
+**/.cache/
+**/colors-wal.*
+**/Matugen.*
+**/generated/
+**/generated-*/
+**/wallpaper-*.png
+**/thumbnail*/
+# Runtime and temporary state
+*.log
+*.pid
+*.sock
+*.lock
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.bak.*
+__pycache__/
+*.py[cod]
+
+# Build/dependency output
+build/
+dist/
+out/
+node_modules/
+venv/
+*.o
+*.so
+
+# Editor/session/local machine state
+*.swp
+*.swo
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*
+secrets*
+token*
+cookies*

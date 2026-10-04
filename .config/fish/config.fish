@@ -24,7 +24,8 @@ if status is-interactive
 
     # Abbrs
     abbr lg 'lazygit'
-    abbr gd 'git diff'
+    abbr gd 'git diff --color=always <f1> -- <f2>'
+    abbr d 'diff --color=always -y (git show <commit>:<f1> | psub) <f2> | less -R'
     abbr ga 'git add .'
     abbr gc 'git commit -m'
     abbr gl 'git log'

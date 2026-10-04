@@ -1,0 +1,5 @@
+.*
+!.config/
+!.gitignore
+!paths.conf
+!state.conf

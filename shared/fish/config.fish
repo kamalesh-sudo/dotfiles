@@ -26,9 +26,9 @@ if status is-interactive
     abbr lg 'lazygit'
     abbr gd 'git diff'
     abbr ga 'git add .'
-    abbr gc 'git commit -am'
+    abbr gc 'git commit -m'
     abbr gl 'git log'
-    abbr gs 'git status'
+    abbr gs 'git status --short'
     abbr gst 'git stash'
     abbr gsp 'git stash pop'
     abbr gp 'git push'
@@ -47,7 +47,9 @@ if status is-interactive
     abbr lsf 'lsd ~/.config/fish/functions/'
     abbr c 'clear'
     abbr syu 'paru -Syu --noconfirm'
-
+    abbr n 'nvim'
+    
+    alias guide 'nvim ~/obsidian/Resources/guide/'
 
     # Caelestia's terminal palette is KDE-session-only.
     if test $is_hyprland -eq 0

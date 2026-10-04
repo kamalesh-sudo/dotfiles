@@ -76,8 +76,8 @@ Item {
             id: surface
             // Both automatic popups and Notification Center use the same
             // screen-attached top-right coordinate space.
-            x: parent.width - width
-            y: 0
+            x: (parent.width - width)
+            y: Core.MenuStyle.bar.fixedHeight
             width: window.panelWidth
             height: window.popupHeight
             // Layer 2/3 are created by each delegate below. The same MenuPanel

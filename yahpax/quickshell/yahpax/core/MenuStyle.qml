@@ -151,7 +151,8 @@ QtObject {
         readonly property real baseHeight: 40
         // Extra lower height below the palette-defined bar row, keeping
         // bottom content clear of the collapsed trapezoid transition.
-        readonly property real heightExtra: 4
+        readonly property real heightExtra: 0
+        readonly property real fixedHeight: -0.9
         // Maximum width of the fixed bar host.
         readonly property real hostMaxWidth: 900
         // Minimum width of the fixed bar host.
@@ -343,7 +344,7 @@ QtObject {
     // Audio visualizer UI dimensions and refresh timing.
     readonly property QtObject audio: QtObject {
         // Visualizer width.
-        readonly property real width: 550
+        readonly property real width: 0 //550
         // Visualizer height.
         readonly property real height: 200
         // Visualizer edge margin.

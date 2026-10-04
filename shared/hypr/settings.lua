@@ -55,8 +55,8 @@ hl.permission("/usr/(bin|local/bin)/hyprlock", "screencopy", "allow")
 
 hl.config({
     general = {
-        gaps_in  = 2,
-        gaps_out = 2,
+        gaps_in  = 1,
+        gaps_out = 1,
 
         border_size = 2,
 

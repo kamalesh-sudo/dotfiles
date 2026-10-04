@@ -55,7 +55,7 @@ Variants {
             // Match the visible cover to the actual BarMorph instead of the
             // larger fixed host window. Keep it centered as the morph resizes.
             x: bar.x + (bar.fixedWidth - bar.inputItem.width) / 2
-            y: 0
+            y: Core.MenuStyle.bar.fixedHeight
             width: bar.inputItem.width
             height: bar.y + bar.inputItem.y + bar.inputItem.height
             visible: bar.contentVisible

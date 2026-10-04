@@ -137,6 +137,15 @@ hl.on("hyprland.start", function()
 end)
 
 
+--------------------------------------
+---- AUTOSTART kde connect daemon ----
+--------------------------------------
+hl.on("hyprland.start", function()
+    hl.exec_cmd(
+        "sh -c 'pgrep -x kdeconnectd >/dev/null || /usr/bin/kdeconnectd >/dev/null 2>&1 &'"
+    )
+end)
+
 -------------------------------
 -- SHUTDOWN ------------------
 -------------------------------

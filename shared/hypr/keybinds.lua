@@ -11,7 +11,7 @@ local music       = "/opt/Spun/scripts/run.sh"
 local notes       = "obsidian"
 local code        = "vscodium"
 local monitor     = "kitty --start-as=fullscreen -e btop"
-
+local proxy = "burpsuite"
 local mainMod = "SUPER"
 local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 
@@ -30,12 +30,12 @@ hl.bind("CTRL + ALT + DELETE",
 ---------------------
 -- APPLICATIONS ----
 ---------------------
-
+hl.bind(mainMod .. " + ALT + B", hl.dsp.exec_cmd("fish -c 'qb'"))
 hl.bind(mainMod .. " + PERIOD",
     hl.dsp.exec_cmd("plasma-emojier"))
 
-hl.bind(mainMod .. " + Return",
-    hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + Return",hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + ALT + Return",hl.dsp.exec_cmd(proxy))
 
 hl.bind(mainMod .. " + E",
     hl.dsp.exec_cmd(fileManager))

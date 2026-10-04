@@ -1,6 +1,6 @@
 function fish_greeting
     #echo -ne '\x1b[38;5;16m'  # Set colour to primary
-    figlet -f ~/.local/share/fonts/figlet/Graffiti.flf sparks
+    figlet -f /usr/share/fonts/TTF/Graffiti.flf sparks
     set_color normal
     if not command -v fastfetch &>/dev/null
         return

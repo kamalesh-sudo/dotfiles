@@ -19,7 +19,7 @@ glow = [    { run = 'foot --app-id=glow -e glow "$1"', orphan = true }
 
 ]
 
-
+browser=[{run="qutebrowser %s" , desc = "browser"}]
 # ------------------------------------------------------------
 # PDF
 # ------------------------------------------------------------
@@ -117,25 +117,24 @@ prepend_rules = [
     { url = "*.json", use = [ "edit", "code" ] },
 
     { url = "*.xml", use = [ "edit", "code" ] },
-    { url = "*.html", use = [ "edit", "code" ] },
+    { url = "*.html", use = [ "edit", "browser" ] },
     { url = "*.css", use = [ "edit", "code" ] },
 
     { url = "*.conf", use = [ "edit", "code" ] },
     { url = "*.cfg", use = [ "edit", "code" ] },
     { url = "*.ini", use = [ "edit", "code" ] },
 
-    { url = "*.md", use = [ "glow" ] },
+    { url = "*.md", use = [ "glow" , "edit" ] },
 
     # --------------------------------------------------------
     # PDF
     # --------------------------------------------------------
 
-    { mime = "application/pdf", use = "pdf" },
+    { mime = "application/pdf", use = ["pdf", "office"] },
 
     # --------------------------------------------------------
     # Audio
     # --------------------------------------------------------
-
     { mime = "audio/*", use = "music" },
 
     # --------------------------------------------------------
@@ -174,5 +173,5 @@ prepend_rules = [
 # ============================================================
 
 append_rules = [
-    { url = "*", use = "open" },
+    { url = "*", use = "browser" },
 ]

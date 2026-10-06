@@ -3,6 +3,10 @@
 !.gitignore
 paths.conf
 state.conf
+.config/hypr/colors-wal.lua
+.config/qutebrowser/colors-wal.py
+.config/qutebrowser/qsettings/QtProject.conf
+.config/qutebrowser/startpage.html
 # Generated theme/cache output
 **/.cache/
 **/colors-wal.*

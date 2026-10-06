@@ -477,7 +477,7 @@ QtObject {
         // Namespace used by transparent edge-reservation surfaces.
         readonly property string exclusionNamespace: "quickshell-bar-exclusion"
         // Screen edge thickness associated with the blurred layer.
-        readonly property real edgeThickness: 6
+        readonly property real edgeThickness: 0
     }
 
     // Shared layout offsets used by screen-attached components.

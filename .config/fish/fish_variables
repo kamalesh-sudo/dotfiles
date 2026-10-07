@@ -1,3 +1,3 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR fish_user_paths:/home/kamal/\x2espicetify
+SETUVAR fish_user_paths:/opt/ffuf\x1e/home/kamal/\x2espicetify

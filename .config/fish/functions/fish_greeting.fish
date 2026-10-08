@@ -12,6 +12,7 @@ function fish_greeting
     else if set -q XDG_CURRENT_DESKTOP; and string match -q '*Hyprland*' "$XDG_CURRENT_DESKTOP"
         set is_hyprland 1
     end
+    
 
     if test $is_hyprland -eq 1
         fastfetch --config "$HOME/.config/fastfetch/yahpax/config.jsonc" --key-padding-left 5

@@ -157,7 +157,7 @@ unknown_symbol = "░"
 empty_symbol = "▃"
 
 [[battery.display]]
-threshold = 20
+threshold = 25
 style = "italic bold red"
 
 [[battery.display]]
@@ -165,7 +165,7 @@ threshold = 60
 style = "italic dimmed bright-purple"
 
 [[battery.display]]
-threshold = 70
+threshold = 75
 style = "italic dimmed yellow"
 
 [git_branch]
